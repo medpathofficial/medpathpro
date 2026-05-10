@@ -8,10 +8,6 @@
   <meta name="theme-color" content="#000000" />
   <title>MedPath — MBBS Revision OS</title>
 
-  <!-- ============================================ -->
-  <!-- CSS START                                    -->
-  <!-- ============================================ -->
-
   <style>
 
     /* -------------------------------------------- */
@@ -725,10 +721,6 @@
 
   </style>
 
-  <!-- ============================================ -->
-  <!-- CSS END                                      -->
-  <!-- ============================================ -->
-
 </head>
 
 <body>
@@ -757,7 +749,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: LANDING                              -->
-    <!-- Built: Session 3                           -->
     <!-- ========================================== -->
 
     <div class="page" id="page-landing">
@@ -776,7 +767,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: ONBOARDING                           -->
-    <!-- Built: Session 4                           -->
     <!-- ========================================== -->
 
     <div class="page" id="page-onboarding">
@@ -795,7 +785,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: DASHBOARD                            -->
-    <!-- Built: Session 8                           -->
     <!-- ========================================== -->
 
     <div class="page" id="page-dashboard">
@@ -906,7 +895,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: SUBJECTS                             -->
-    <!-- Built: Session 9                           -->
     <!-- ========================================== -->
 
     <div class="page" id="page-subjects">
@@ -921,7 +909,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: PLANNER                              -->
-    <!-- Built: Session 10                          -->
     <!-- ========================================== -->
 
     <div class="page" id="page-planner">
@@ -936,7 +923,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE: PROGRESS                             -->
-    <!-- Built: Session 11                          -->
     <!-- ========================================== -->
 
     <div class="page" id="page-progress">
@@ -991,13 +977,13 @@
     const Storage = {
 
       keys: {
-        profile:    'medpath_profile',
-        topicStates:'medpath_topic_states',
+        profile:      'medpath_profile',
+        topicStates:  'medpath_topic_states',
         examInstances:'medpath_exam_instances',
-        examStates: 'medpath_exam_states',
-        revisionQ:  'medpath_revision_queue',
-        streak:     'medpath_streak',
-        version:    'medpath_version'
+        examStates:   'medpath_exam_states',
+        revisionQ:    'medpath_revision_queue',
+        streak:       'medpath_streak',
+        version:      'medpath_version'
       },
 
       get(key) {
@@ -1005,7 +991,6 @@
           const val = localStorage.getItem(key);
           return val ? JSON.parse(val) : null;
         } catch(e) {
-          console.error('Storage.get error:', e);
           return null;
         }
       },
@@ -1015,7 +1000,6 @@
           localStorage.setItem(key, JSON.stringify(value));
           return true;
         } catch(e) {
-          console.error('Storage.set error:', e);
           return false;
         }
       },
@@ -1040,7 +1024,6 @@
         }
       },
 
-      // Get user profile — returns default if none exists
       getProfile() {
         return this.get(this.keys.profile) || {
           name: '',
@@ -1054,22 +1037,18 @@
         };
       },
 
-      // Save user profile
       saveProfile(profile) {
         return this.set(this.keys.profile, profile);
       },
 
-      // Get all topic states
       getTopicStates() {
         return this.get(this.keys.topicStates) || {};
       },
 
-      // Save all topic states
       saveTopicStates(states) {
         return this.set(this.keys.topicStates, states);
       },
 
-      // Get single topic state
       getTopicState(topicId) {
         const states = this.getTopicStates();
         return states[topicId] || {
@@ -1084,14 +1063,12 @@
         };
       },
 
-      // Save single topic state
       saveTopicState(topicId, state) {
         const states = this.getTopicStates();
         states[topicId] = state;
         return this.saveTopicStates(states);
       },
 
-      // Get streak data
       getStreak() {
         return this.get(this.keys.streak) || {
           current: 0,
@@ -1101,7 +1078,6 @@
         };
       },
 
-      // Save streak data
       saveStreak(streak) {
         return this.set(this.keys.streak, streak);
       }
@@ -1120,12 +1096,10 @@
         } else {
           document.body.classList.remove('light-mode');
         }
-        // Update toggle button
         const btn = document.getElementById('themeToggleBtn');
         if (btn) {
           btn.textContent = theme === 'light' ? '☀️' : '🌙';
         }
-        // Update status display
         const statusTheme = document.getElementById('statusTheme');
         if (statusTheme) {
           statusTheme.textContent = theme;
@@ -1138,7 +1112,7 @@
         profile.theme = newTheme;
         Storage.saveProfile(profile);
         this.apply(newTheme);
-        App.showToast(
+        Toast.show(
           newTheme === 'light'
             ? '☀️ Light mode on'
             : '🌙 Dark mode on'
@@ -1159,24 +1133,19 @@
     const Nav = {
 
       currentPage: 'dashboard',
-
-      // Pages that show bottom nav
       mainPages: ['dashboard','subjects','planner','progress'],
 
       go(pageName) {
-        // Hide all pages
         document.querySelectorAll('.page').forEach(p => {
           p.classList.remove('active');
         });
 
-        // Show target page
         const target = document.getElementById('page-' + pageName);
         if (target) {
           target.classList.add('active');
           this.currentPage = pageName;
         }
 
-        // Update bottom nav
         document.querySelectorAll('.nav-item').forEach(n => {
           n.classList.remove('active');
         });
@@ -1185,16 +1154,12 @@
           activeNav.classList.add('active');
         }
 
-        // Show or hide bottom nav
         const bottomNav = document.getElementById('bottomNav');
         if (bottomNav) {
           bottomNav.style.display =
-            this.mainPages.includes(pageName)
-              ? 'flex'
-              : 'none';
+            this.mainPages.includes(pageName) ? 'flex' : 'none';
         }
 
-        // Scroll to top
         window.scrollTo(0, 0);
       }
 
@@ -1212,7 +1177,6 @@
         const toast = document.getElementById('toast');
         if (!toast) return;
 
-        // Clear existing
         if (this.timeout) {
           clearTimeout(this.timeout);
           toast.classList.remove('show');
@@ -1220,7 +1184,6 @@
 
         toast.textContent = message;
 
-        // Small delay so animation triggers
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             toast.classList.add('show');
@@ -1277,22 +1240,18 @@
 
     const App = {
 
-      // Navigate to a page
       navigate(pageName) {
         Nav.go(pageName);
       },
 
-      // Toggle theme
       toggleTheme() {
         Theme.toggle();
       },
 
-      // Show toast
       showToast(message, duration) {
         Toast.show(message, duration);
       },
 
-      // Update dashboard greeting
       updateGreeting() {
         const profile = Storage.getProfile();
         const greetingEl = document.getElementById('dashGreeting');
@@ -1317,7 +1276,6 @@
         }
       },
 
-      // Simulate onboarding complete
       completeOnboarding() {
         const profile = Storage.getProfile();
         profile.onboardingComplete = true;
@@ -1326,7 +1284,6 @@
         Nav.go('dashboard');
       },
 
-      // Test functions for Session 2
       testToast() {
         Toast.show('🎉 Toast system is working perfectly!');
       },
@@ -1342,7 +1299,9 @@
       },
 
       resetAll() {
-        if (confirm('Reset all MedPath data? This cannot be undone.')) {
+        if (confirm(
+          'Reset all MedPath data? This cannot be undone.'
+        )) {
           Storage.clearAll();
           Toast.show('🗑️ All data cleared');
           setTimeout(() => {
@@ -1351,19 +1310,13 @@
         }
       },
 
-      // Decide what to show on app open
       init() {
-        // Load theme first (before anything shows)
         Theme.load();
-
-        // Check onboarding status
         const profile = Storage.getProfile();
 
-        // Hide loading screen
         setTimeout(() => {
           this.hideLoading();
 
-          // Decide starting page
           if (!profile.onboardingComplete) {
             Nav.go('landing');
           } else {
@@ -1377,11 +1330,9 @@
       hideLoading() {
         const loading = document.getElementById('loadingScreen');
         const app = document.getElementById('appContainer');
-
         if (!loading || !app) return;
 
         loading.style.opacity = '0';
-
         setTimeout(() => {
           loading.style.display = 'none';
           app.style.display = 'block';
