@@ -1,1359 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="MedPath — The MBBS Revision Operating System. Built for Indian medical students." />
-  <meta name="theme-color" content="#000000" />
-  <title>MedPath — MBBS Revision OS</title>
-
-  <style>
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — VARIABLES + DESIGN SYSTEM     */
-    /* -------------------------------------------- */
-
-    :root {
-      --gold-primary: #f59e0b;
-      --gold-light: #fcd34d;
-      --gold-dark: #d97706;
-
-      --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
-      --bg-card: #111111;
-      --bg-card-hover: #1a1a1a;
-      --bg-input: #1a1a1a;
-
-      --bg-primary-light: #f5f5f7;
-      --bg-secondary-light: #ffffff;
-      --bg-card-light: #ffffff;
-      --bg-input-light: #f0f0f5;
-
-      --text-primary: #ffffff;
-      --text-secondary: #a1a1aa;
-      --text-muted: #52525b;
-      --text-inverse: #000000;
-
-      --text-primary-light: #1a1a1a;
-      --text-secondary-light: #52525b;
-      --text-muted-light: #a1a1aa;
-
-      --purple: #6366f1;
-      --purple-light: #818cf8;
-      --purple-dark: #4f46e5;
-
-      --red: #ef4444;
-      --red-light: #fca5a5;
-      --orange: #f97316;
-      --orange-light: #fdba74;
-      --yellow: #eab308;
-      --yellow-light: #fde047;
-      --green: #22c55e;
-      --green-light: #86efac;
-
-      --tier-essential: #ef4444;
-      --tier-pg: #eab308;
-      --tier-foundation: #6366f1;
-      --tier-proff: #71717a;
-
-      --space-xs: 4px;
-      --space-sm: 8px;
-      --space-md: 16px;
-      --space-lg: 24px;
-      --space-xl: 32px;
-      --space-2xl: 48px;
-      --space-3xl: 64px;
-
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-      --radius-full: 9999px;
-
-      --font-family: -apple-system, BlinkMacSystemFont,
-        'SF Pro Display', 'Segoe UI',
-        system-ui, sans-serif;
-
-      --font-xs: 11px;
-      --font-sm: 13px;
-      --font-md: 15px;
-      --font-lg: 17px;
-      --font-xl: 20px;
-      --font-2xl: 24px;
-      --font-3xl: 32px;
-      --font-4xl: 40px;
-
-      --font-weight-regular: 400;
-      --font-weight-medium: 500;
-      --font-weight-semibold: 600;
-      --font-weight-bold: 700;
-      --font-weight-heavy: 800;
-
-      --line-height-tight: 1.2;
-      --line-height-normal: 1.5;
-      --line-height-relaxed: 1.7;
-
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
-      --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
-      --shadow-gold: 0 4px 24px rgba(245,158,11,0.2);
-
-      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-
-      --bg: var(--bg-primary);
-      --bg-2: var(--bg-secondary);
-      --bg-c: var(--bg-card);
-      --bg-c-h: var(--bg-card-hover);
-      --bg-i: var(--bg-input);
-      --text: var(--text-primary);
-      --text-2: var(--text-secondary);
-      --text-3: var(--text-muted);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — LIGHT MODE                    */
-    /* -------------------------------------------- */
-
-    body.light-mode {
-      --bg: var(--bg-primary-light);
-      --bg-2: var(--bg-secondary-light);
-      --bg-c: var(--bg-card-light);
-      --bg-c-h: #e8e8ed;
-      --bg-i: var(--bg-input-light);
-      --text: var(--text-primary-light);
-      --text-2: var(--text-secondary-light);
-      --text-3: var(--text-muted-light);
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-      --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — RESET + BASE                  */
-    /* -------------------------------------------- */
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      font-size: 16px;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-      font-family: var(--font-family);
-      font-size: var(--font-md);
-      color: var(--text);
-      background-color: var(--bg);
-      min-height: 100vh;
-      overflow-x: hidden;
-      transition:
-        background-color var(--transition-normal),
-        color var(--transition-normal);
-    }
-
-    button {
-      font-family: var(--font-family);
-      cursor: pointer;
-      border: none;
-      outline: none;
-      background: none;
-    }
-
-    input, textarea, select {
-      font-family: var(--font-family);
-      outline: none;
-      border: none;
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — LAYOUT                        */
-    /* -------------------------------------------- */
-
-    .app-container {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    .page {
-      display: none;
-      min-height: 100vh;
-      padding-bottom: 90px;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .page-content {
-      padding: var(--space-md);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — TYPOGRAPHY UTILITIES          */
-    /* -------------------------------------------- */
-
-    .text-xs { font-size: var(--font-xs); }
-    .text-sm { font-size: var(--font-sm); }
-    .text-md { font-size: var(--font-md); }
-    .text-lg { font-size: var(--font-lg); }
-    .text-xl { font-size: var(--font-xl); }
-    .text-2xl { font-size: var(--font-2xl); }
-    .text-3xl { font-size: var(--font-3xl); }
-    .text-4xl { font-size: var(--font-4xl); }
-
-    .font-medium { font-weight: var(--font-weight-medium); }
-    .font-semibold { font-weight: var(--font-weight-semibold); }
-    .font-bold { font-weight: var(--font-weight-bold); }
-    .font-heavy { font-weight: var(--font-weight-heavy); }
-
-    .text-gold { color: var(--gold-primary); }
-    .text-purple { color: var(--purple); }
-    .text-green { color: var(--green); }
-    .text-red { color: var(--red); }
-    .text-orange { color: var(--orange); }
-    .text-secondary { color: var(--text-2); }
-    .text-muted { color: var(--text-3); }
-
-    .text-center { text-align: center; }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — SPACING UTILITIES             */
-    /* -------------------------------------------- */
-
-    .mt-xs { margin-top: var(--space-xs); }
-    .mt-sm { margin-top: var(--space-sm); }
-    .mt-md { margin-top: var(--space-md); }
-    .mt-lg { margin-top: var(--space-lg); }
-    .mt-xl { margin-top: var(--space-xl); }
-
-    .mb-xs { margin-bottom: var(--space-xs); }
-    .mb-sm { margin-bottom: var(--space-sm); }
-    .mb-md { margin-bottom: var(--space-md); }
-    .mb-lg { margin-bottom: var(--space-lg); }
-    .mb-xl { margin-bottom: var(--space-xl); }
-
-    .p-sm { padding: var(--space-sm); }
-    .p-md { padding: var(--space-md); }
-    .p-lg { padding: var(--space-lg); }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — FLEX UTILITIES                */
-    /* -------------------------------------------- */
-
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .flex-center {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .flex-between {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .flex-start {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    .gap-xs { gap: var(--space-xs); }
-    .gap-sm { gap: var(--space-sm); }
-    .gap-md { gap: var(--space-md); }
-    .gap-lg { gap: var(--space-lg); }
-    .flex-wrap { flex-wrap: wrap; }
-    .flex-1 { flex: 1; }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — CARD COMPONENT               */
-    /* -------------------------------------------- */
-
-    .card {
-      background: var(--bg-c);
-      border-radius: var(--radius-lg);
-      padding: var(--space-md);
-      box-shadow: var(--shadow-sm);
-      transition:
-        background var(--transition-normal),
-        box-shadow var(--transition-normal);
-    }
-
-    .card-gold {
-      background: linear-gradient(
-        135deg,
-        rgba(245,158,11,0.12),
-        rgba(252,211,77,0.04)
-      );
-      border: 1px solid rgba(245,158,11,0.25);
-    }
-
-    .card-purple {
-      background: linear-gradient(
-        135deg,
-        rgba(99,102,241,0.12),
-        rgba(129,140,248,0.04)
-      );
-      border: 1px solid rgba(99,102,241,0.25);
-    }
-
-    .card-green {
-      background: linear-gradient(
-        135deg,
-        rgba(34,197,94,0.12),
-        rgba(134,239,172,0.04)
-      );
-      border: 1px solid rgba(34,197,94,0.25);
-    }
-
-    .card-red {
-      background: linear-gradient(
-        135deg,
-        rgba(239,68,68,0.12),
-        rgba(252,165,165,0.04)
-      );
-      border: 1px solid rgba(239,68,68,0.25);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — BUTTON COMPONENT             */
-    /* -------------------------------------------- */
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-sm);
-      padding: 14px var(--space-lg);
-      border-radius: var(--radius-md);
-      font-size: var(--font-md);
-      font-weight: var(--font-weight-semibold);
-      transition: all var(--transition-fast);
-      cursor: pointer;
-      border: none;
-      outline: none;
-      width: 100%;
-    }
-
-    .btn-primary {
-      background: linear-gradient(
-        135deg,
-        var(--gold-primary),
-        var(--gold-dark)
-      );
-      color: #000000;
-      box-shadow: var(--shadow-gold);
-    }
-
-    .btn-primary:active { transform: scale(0.98); }
-
-    .btn-secondary {
-      background: var(--bg-i);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-secondary:active { transform: scale(0.98); }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-2);
-      padding: 10px var(--space-md);
-      width: auto;
-    }
-
-    .btn-purple {
-      background: linear-gradient(
-        135deg,
-        var(--purple),
-        var(--purple-dark)
-      );
-      color: #ffffff;
-    }
-
-    .btn-green {
-      background: linear-gradient(
-        135deg,
-        var(--green),
-        #16a34a
-      );
-      color: #ffffff;
-    }
-
-    .btn-sm {
-      padding: 8px var(--space-md);
-      font-size: var(--font-sm);
-      border-radius: var(--radius-sm);
-      width: auto;
-    }
-
-    .btn-icon {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      border-radius: var(--radius-md);
-      flex-shrink: 0;
-      width: auto;
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — BADGE COMPONENT              */
-    /* -------------------------------------------- */
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      font-size: var(--font-xs);
-      font-weight: var(--font-weight-semibold);
-      letter-spacing: 0.3px;
-    }
-
-    .badge-essential {
-      background: rgba(239,68,68,0.15);
-      color: var(--red);
-      border: 1px solid rgba(239,68,68,0.3);
-    }
-
-    .badge-pg {
-      background: rgba(234,179,8,0.15);
-      color: var(--yellow);
-      border: 1px solid rgba(234,179,8,0.3);
-    }
-
-    .badge-foundation {
-      background: rgba(99,102,241,0.15);
-      color: var(--purple-light);
-      border: 1px solid rgba(99,102,241,0.3);
-    }
-
-    .badge-proff {
-      background: rgba(113,113,122,0.15);
-      color: #a1a1aa;
-      border: 1px solid rgba(113,113,122,0.3);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — INPUT COMPONENT              */
-    /* -------------------------------------------- */
-
-    .input {
-      width: 100%;
-      background: var(--bg-i);
-      color: var(--text);
-      padding: 14px var(--space-md);
-      border-radius: var(--radius-md);
-      font-size: var(--font-md);
-      border: 1.5px solid transparent;
-      transition: border-color var(--transition-fast);
-    }
-
-    .input:focus {
-      border-color: var(--gold-primary);
-    }
-
-    .input::placeholder {
-      color: var(--text-3);
-    }
-
-    textarea.input {
-      resize: none;
-      line-height: var(--line-height-relaxed);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — PROGRESS BAR                 */
-    /* -------------------------------------------- */
-
-    .progress-bar {
-      width: 100%;
-      height: 6px;
-      background: var(--bg-i);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: var(--radius-full);
-      background: linear-gradient(
-        90deg,
-        var(--gold-primary),
-        var(--gold-light)
-      );
-      transition: width var(--transition-slow);
-    }
-
-    .progress-fill-purple {
-      background: linear-gradient(
-        90deg,
-        var(--purple),
-        var(--purple-light)
-      );
-    }
-
-    .progress-fill-green {
-      background: linear-gradient(
-        90deg,
-        var(--green),
-        var(--green-light)
-      );
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — BOTTOM NAVIGATION            */
-    /* -------------------------------------------- */
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      background: rgba(10,10,10,0.96);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      padding: 8px 0 24px;
-      z-index: 100;
-    }
-
-    body.light-mode .bottom-nav {
-      background: rgba(255,255,255,0.96);
-      border-top: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 16px;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      background: none;
-      border: none;
-      color: var(--text-3);
-      min-width: 64px;
-    }
-
-    .nav-item.active {
-      color: var(--gold-primary);
-    }
-
-    .nav-item:active {
-      transform: scale(0.92);
-    }
-
-    .nav-icon {
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .nav-label {
-      font-size: 10px;
-      font-weight: var(--font-weight-medium);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — TOP HEADER                   */
-    /* -------------------------------------------- */
-
-    .top-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-md);
-      padding-top: 56px;
-    }
-
-    .header-title {
-      font-size: var(--font-xl);
-      font-weight: var(--font-weight-bold);
-    }
-
-    .header-subtitle {
-      font-size: var(--font-sm);
-      color: var(--text-2);
-      margin-top: 2px;
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — TOAST                        */
-    /* -------------------------------------------- */
-
-    .toast {
-      position: fixed;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-16px);
-      background: var(--bg-c);
-      color: var(--text);
-      padding: 12px 20px;
-      border-radius: var(--radius-full);
-      font-size: var(--font-sm);
-      font-weight: var(--font-weight-medium);
-      box-shadow: var(--shadow-lg);
-      z-index: 9999;
-      opacity: 0;
-      transition: all var(--transition-normal);
-      white-space: nowrap;
-      pointer-events: none;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    body.light-mode .toast {
-      border: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — LOADING SCREEN               */
-    /* -------------------------------------------- */
-
-    .loading-screen {
-      position: fixed;
-      inset: 0;
-      background: #000000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      gap: var(--space-md);
-      transition: opacity 0.4s ease;
-    }
-
-    .loading-logo {
-      font-size: 52px;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .loading-wordmark {
-      font-size: var(--font-xl);
-      font-weight: var(--font-weight-bold);
-      color: var(--gold-primary);
-      letter-spacing: -0.5px;
-    }
-
-    .loading-text {
-      font-size: var(--font-sm);
-      color: #52525b;
-      font-weight: var(--font-weight-medium);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — PLACEHOLDER PAGES            */
-    /* -------------------------------------------- */
-
-    .placeholder-page {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-      gap: var(--space-md);
-      padding: var(--space-xl);
-      text-align: center;
-    }
-
-    .placeholder-emoji {
-      font-size: 48px;
-    }
-
-    .placeholder-title {
-      font-size: var(--font-xl);
-      font-weight: var(--font-weight-bold);
-    }
-
-    .placeholder-subtitle {
-      font-size: var(--font-sm);
-      color: var(--text-2);
-      line-height: var(--line-height-relaxed);
-    }
-
-    /* -------------------------------------------- */
-    /* SECTION: CSS — ANIMATIONS                   */
-    /* -------------------------------------------- */
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.08); opacity: 0.8; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    .animate-fade-in {
-      animation: fadeIn var(--transition-normal) forwards;
-    }
-
-  </style>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="MedPath — The MBBS Revision Operating System. Built for Indian medical students." />
+<meta name="theme-color" content="#000000" />
+<title>MedPath — MBBS Revision OS</title>
+<style>
+:root {
+--gold-primary:#f59e0b; --gold-light:#fcd34d; --gold-dark:#d97706;
+--bg-primary:#000; --bg-secondary:#0a0a0a; --bg-card:#111; --bg-card-hover:#1a1a1a; --bg-input:#1a1a1a;
+--bg-primary-light:#f5f5f7; --bg-secondary-light:#fff; --bg-card-light:#fff; --bg-input-light:#f0f0f5;
+--text-primary:#fff; --text-secondary:#a1a1aa; --text-muted:#52525b;
+--text-primary-light:#1a1a1a; --text-secondary-light:#52525b; --text-muted-light:#a1a1aa;
+--purple:#6366f1; --purple-light:#818cf8; --purple-dark:#4f46e5;
+--red:#ef4444; --orange:#f97316; --yellow:#eab308; --green:#22c55e; --green-light:#86efac;
+--space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px; --space-2xl:48px; --space-3xl:64px;
+--radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px; --radius-full:9999px;
+--font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+--font-xs:11px; --font-sm:13px; --font-md:15px; --font-lg:17px; --font-xl:20px; --font-2xl:24px; --font-3xl:32px;
+--shadow-sm:0 1px 3px rgba(0,0,0,0.3); --shadow-md:0 4px 16px rgba(0,0,0,0.4); --shadow-lg:0 8px 32px rgba(0,0,0,0.5); --shadow-gold:0 4px 24px rgba(245,158,11,0.2);
+--transition-fast:150ms cubic-bezier(0.4,0,0.2,1); --transition-normal:250ms cubic-bezier(0.4,0,0.2,1); --transition-slow:400ms cubic-bezier(0.4,0,0.2,1);
+--bg:var(--bg-primary); --bg-c:var(--bg-card); --bg-i:var(--bg-input); --text:var(--text-primary); --text-2:var(--text-secondary); --text-3:var(--text-muted);
+}
+body.light-mode {
+--bg:var(--bg-primary-light); --bg-c:var(--bg-card-light); --bg-i:var(--bg-input-light);
+--text:var(--text-primary-light); --text-2:var(--text-secondary-light); --text-3:var(--text-muted-light);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html { font-size:16px; -webkit-text-size-adjust:100%; }
+body { font-family:var(--font-family); font-size:var(--font-md); color:var(--text); background:var(--bg); min-height:100vh; overflow-x:hidden; transition:background var(--transition-normal),color var(--transition-normal); }
+button { font-family:var(--font-family); cursor:pointer; border:none; outline:none; background:none; }
+.app-container { max-width:480px; margin:0 auto; min-height:100vh; position:relative; }
+.page { display:none; min-height:100vh; padding-bottom:90px; }
+.page.active { display:block; }
+.page-content { padding:var(--space-md); }
+.text-xs{font-size:var(--font-xs);} .text-sm{font-size:var(--font-sm);} .text-md{font-size:var(--font-md);} .text-lg{font-size:var(--font-lg);} .text-xl{font-size:var(--font-xl);} .text-2xl{font-size:var(--font-2xl);}
+.font-medium{font-weight:500;} .font-semibold{font-weight:600;} .font-bold{font-weight:700;} .font-heavy{font-weight:800;}
+.text-gold{color:var(--gold-primary);} .text-purple{color:var(--purple-light);} .text-secondary{color:var(--text-2);} .text-muted{color:var(--text-3);} .text-center{text-align:center;}
+.mb-xs{margin-bottom:var(--space-xs);} .mb-sm{margin-bottom:var(--space-sm);} .mb-md{margin-bottom:var(--space-md);} .mb-lg{margin-bottom:var(--space-lg);} .mb-xl{margin-bottom:var(--space-xl);}
+.flex-between { display:flex; align-items:center; justify-content:space-between; }
+.flex-start { display:flex; align-items:center; justify-content:flex-start; }
+.gap-sm{gap:var(--space-sm);}
+.card { background:var(--bg-c); border-radius:var(--radius-lg); padding:var(--space-md); box-shadow:var(--shadow-sm); }
+.card-gold { background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(252,211,77,0.04)); border:1px solid rgba(245,158,11,0.25); }
+.card-purple { background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(129,140,248,0.04)); border:1px solid rgba(99,102,241,0.25); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-sm); padding:14px var(--space-lg); border-radius:var(--radius-md); font-size:var(--font-md); font-weight:600; transition:all var(--transition-fast); cursor:pointer; border:none; outline:none; width:100%; font-family:var(--font-family); }
+.btn-primary { background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark)); color:#000; box-shadow:var(--shadow-gold); }
+.btn-primary:active { transform:scale(0.98); }
+.btn-secondary { background:var(--bg-i); color:var(--text); border:1px solid rgba(255,255,255,0.08); }
+.btn-icon { width:40px; height:40px; padding:0; border-radius:var(--radius-md); flex-shrink:0; }
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--radius-full); font-size:var(--font-xs); font-weight:600; letter-spacing:0.3px; }
+.badge-foundation { background:rgba(99,102,241,0.15); color:var(--purple-light); border:1px solid rgba(99,102,241,0.3); }
+.progress-bar { width:100%; height:6px; background:var(--bg-i); border-radius:var(--radius-full); overflow:hidden; }
+.progress-fill { height:100%; border-radius:var(--radius-full); background:linear-gradient(90deg,var(--gold-primary),var(--gold-light)); transition:width var(--transition-slow); }
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-around; padding:8px 0 24px; z-index:100; }
+body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px solid rgba(0,0,0,0.08); }
+.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 16px; border-radius:var(--radius-md); cursor:pointer; transition:all var(--transition-fast); background:none; border:none; color:var(--text-3); min-width:64px; }
+.nav-item.active { color:var(--gold-primary); }
+.nav-item:active { transform:scale(0.92); }
+.nav-icon { font-size:22px; line-height:1; }
+.nav-label { font-size:10px; font-weight:500; }
+.top-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md); padding-top:56px; }
+.header-title { font-size:var(--font-xl); font-weight:700; }
+.header-subtitle { font-size:var(--font-sm); color:var(--text-2); margin-top:2px; }
+.toast { position:fixed; top:60px; left:50%; transform:translateX(-50%) translateY(-16px); background:var(--bg-c); color:var(--text); padding:12px 20px; border-radius:var(--radius-full); font-size:var(--font-sm); font-weight:500; box-shadow:var(--shadow-lg); z-index:9999; opacity:0; transition:all var(--transition-normal); white-space:nowrap; pointer-events:none; border:1px solid rgba(255,255,255,0.08); }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.loading-screen { position:fixed; inset:0; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:99999; gap:var(--space-md); transition:opacity 0.4s ease; }
+.loading-logo { font-size:52px; animation:pulse 1.5s ease-in-out infinite; }
+.loading-wordmark { font-size:var(--font-xl); font-weight:700; color:var(--gold-primary); letter-spacing:-0.5px; }
+.loading-text { font-size:var(--font-sm); color:#52525b; font-weight:500; }
+.placeholder-page { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:var(--space-md); padding:var(--space-xl); text-align:center; }
+.placeholder-emoji { font-size:48px; }
+.placeholder-title { font-size:var(--font-xl); font-weight:700; }
+.placeholder-subtitle { font-size:var(--font-sm); color:var(--text-2); line-height:1.7; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.08);opacity:0.8;} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+.animate-fade-in { animation:fadeIn var(--transition-normal) forwards; }
+.animate-fade-in-up { animation:fadeInUp 0.5s ease forwards; opacity:0; }
+.delay-1{animation-delay:0.1s;} .delay-2{animation-delay:0.2s;} .delay-3{animation-delay:0.3s;} .delay-4{animation-delay:0.4s;} .delay-5{animation-delay:0.5s;} .delay-6{animation-delay:0.6s;}
+
+.landing-page { min-height:100vh; padding-bottom:var(--space-3xl); }
+.landing-nav { display:flex; align-items:center; justify-content:space-between; padding:20px var(--space-md); padding-top:52px; }
+.landing-logo { display:flex; align-items:center; gap:var(--space-sm); }
+.landing-logo-icon { font-size:24px; }
+.landing-logo-text { font-size:var(--font-lg); font-weight:700; color:var(--gold-primary); letter-spacing:-0.3px; }
+.landing-nav-badge { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); color:var(--gold-primary); padding:4px 12px; border-radius:var(--radius-full); font-size:var(--font-xs); font-weight:600; }
+.hero-section { padding:var(--space-xl) var(--space-md); padding-top:var(--space-lg); }
+.hero-eyebrow { display:inline-flex; align-items:center; gap:var(--space-xs); background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); color:var(--purple-light); padding:5px 14px; border-radius:var(--radius-full); font-size:var(--font-xs); font-weight:600; margin-bottom:var(--space-lg); letter-spacing:0.3px; }
+.hero-headline { font-size:34px; font-weight:800; line-height:1.15; letter-spacing:-1px; color:#fff; margin-bottom:var(--space-md); }
+.hero-headline .highlight { background:linear-gradient(135deg,var(--gold-primary),var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-subtext { font-size:var(--font-md); color:#a1a1aa; line-height:1.7; margin-bottom:var(--space-xl); }
+.hero-cta-group { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-xl); }
+.hero-trust-row { display:flex; align-items:center; justify-content:center; gap:var(--space-md); flex-wrap:wrap; }
+.trust-item { display:flex; align-items:center; gap:5px; font-size:var(--font-xs); color:#71717a; font-weight:500; }
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-sm); margin:var(--space-lg) var(--space-md); }
+.stat-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:var(--space-md); text-align:center; border:1px solid rgba(255,255,255,0.04); }
+.stat-number { font-size:var(--font-2xl); font-weight:800; color:var(--gold-primary); letter-spacing:-0.5px; line-height:1; margin-bottom:4px; }
+.stat-label { font-size:10px; color:#71717a; font-weight:500; line-height:1.3; }
+.section-header { padding:var(--space-lg) var(--space-md) var(--space-md); }
+.section-eyebrow { font-size:var(--font-xs); font-weight:600; color:var(--gold-primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:var(--space-sm); }
+.section-title { font-size:var(--font-2xl); font-weight:700; color:#fff; line-height:1.2; letter-spacing:-0.5px; margin-bottom:var(--space-sm); }
+.section-subtitle { font-size:var(--font-sm); color:#71717a; line-height:1.7; }
+.problem-section { margin:0 var(--space-md); }
+.problem-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:var(--space-lg); border:1px solid rgba(239,68,68,0.15); margin-bottom:var(--space-sm); }
+.problem-item { display:flex; align-items:flex-start; gap:var(--space-md); padding:var(--space-sm) 0; }
+.problem-item:not(:last-child) { border-bottom:1px solid rgba(255,255,255,0.04); }
+.problem-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+.problem-text { font-size:var(--font-sm); color:#a1a1aa; line-height:1.7; }
+.problem-text strong { color:#fff; font-weight:600; }
+.solution-callout { background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(252,211,77,0.04)); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-lg); padding:var(--space-md); text-align:center; }
+.solution-callout-text { font-size:var(--font-md); font-weight:600; color:var(--gold-primary); line-height:1.7; }
+.steps-section { margin:0 var(--space-md); }
+.step-item { display:flex; align-items:flex-start; gap:var(--space-md); margin-bottom:var(--space-md); }
+.step-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.step-number { width:36px; height:36px; border-radius:var(--radius-full); background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark)); color:#000; font-size:var(--font-sm); font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.step-line { width:2px; flex:1; min-height:32px; background:linear-gradient(to bottom,rgba(245,158,11,0.3),transparent); margin-top:4px; }
+.step-right { padding-top:6px; padding-bottom:var(--space-md); }
+.step-title { font-size:var(--font-md); font-weight:600; color:#fff; margin-bottom:4px; }
+.step-desc { font-size:var(--font-sm); color:#71717a; line-height:1.7; }
+.features-section { margin:0 var(--space-md); }
+.feature-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom:var(--space-sm); border:1px solid rgba(255,255,255,0.04); display:flex; align-items:flex-start; gap:var(--space-md); }
+.feature-icon-wrap { width:44px; height:44px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.feature-icon-gold { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.2); }
+.feature-icon-purple { background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.2); }
+.feature-icon-green { background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.2); }
+.feature-icon-red { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.2); }
+.feature-title { font-size:var(--font-md); font-weight:600; color:#fff; margin-bottom:3px; }
+.feature-desc { font-size:var(--font-sm); color:#71717a; line-height:1.7; }
+.final-cta-section { margin:var(--space-lg) var(--space-md) 0; background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(99,102,241,0.08)); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-xl); padding:var(--space-xl) var(--space-lg); text-align:center; }
+.final-cta-emoji { font-size:40px; margin-bottom:var(--space-md); }
+.final-cta-title { font-size:var(--font-2xl); font-weight:700; color:#fff; line-height:1.2; letter-spacing:-0.5px; margin-bottom:var(--space-sm); }
+.final-cta-subtitle { font-size:var(--font-sm); color:#71717a; line-height:1.7; margin-bottom:var(--space-lg); }
+.final-cta-trust { font-size:var(--font-xs); color:#52525b; margin-top:var(--space-md); }
+.section-divider { height:1px; background:rgba(255,255,255,0.04); margin:var(--space-lg) var(--space-md); }
+</style>
 </head>
-
 <body>
 
-  <!-- ============================================ -->
-  <!-- LOADING SCREEN                               -->
-  <!-- ============================================ -->
-
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-logo">🏥</div>
-    <div class="loading-wordmark">MedPath</div>
-    <div class="loading-text">Preparing your revision system...</div>
-  </div>
-
-  <!-- ============================================ -->
-  <!-- TOAST                                        -->
-  <!-- ============================================ -->
-
-  <div class="toast" id="toast"></div>
-
-  <!-- ============================================ -->
-  <!-- APP CONTAINER                                -->
-  <!-- ============================================ -->
-
-  <div class="app-container" id="appContainer" style="display:none;">
-
-    <!-- ========================================== -->
-    <!-- PAGE: LANDING                              -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-landing">
-      <div class="placeholder-page">
-        <div class="placeholder-emoji">🏥</div>
-        <div class="placeholder-title">MedPath</div>
-        <div class="placeholder-subtitle">
-          Landing page coming in Session 3.
-        </div>
-        <button class="btn btn-primary" style="max-width:200px;"
-          onclick="App.navigate('dashboard')">
-          Skip to Dashboard
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- PAGE: ONBOARDING                           -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-onboarding">
-      <div class="placeholder-page">
-        <div class="placeholder-emoji">👋</div>
-        <div class="placeholder-title">Onboarding</div>
-        <div class="placeholder-subtitle">
-          Onboarding flow coming in Session 4.
-        </div>
-        <button class="btn btn-primary" style="max-width:200px;"
-          onclick="App.completeOnboarding()">
-          Simulate Onboarding Done
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- PAGE: DASHBOARD                            -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-dashboard">
-      <div class="top-header">
-        <div>
-          <div class="header-title" id="dashGreeting">
-            Good morning 👋
-          </div>
-          <div class="header-subtitle" id="dashSubtitle">
-            MedPath V4
-          </div>
-        </div>
-        <button class="btn btn-icon btn-secondary"
-          id="themeToggleBtn"
-          onclick="App.toggleTheme()">🌙</button>
-      </div>
-      <div class="page-content">
-
-        <div class="card card-gold mb-md animate-fade-in">
-          <div class="flex-between mb-sm">
-            <span class="text-sm font-semibold text-gold">
-              ✅ Session 2 Complete
-            </span>
-            <span class="badge badge-foundation">JS Engine</span>
-          </div>
-          <div class="text-lg font-bold mb-xs">
-            Core engine is running.
-          </div>
-          <div class="text-sm text-secondary"
-            style="line-height:var(--line-height-relaxed);">
-            localStorage, profile system, theme,
-            navigation, toast, and app init
-            are all working correctly.
-          </div>
-        </div>
-
-        <div class="card mb-md">
-          <div class="text-sm font-semibold text-secondary mb-md">
-            Engine status
-          </div>
-          <div class="flex-start gap-sm mb-sm">
-            <span>✅</span>
-            <span class="text-sm">localStorage system active</span>
-          </div>
-          <div class="flex-start gap-sm mb-sm">
-            <span>✅</span>
-            <span class="text-sm">User profile: <span
-              id="statusName" class="text-gold">—</span></span>
-          </div>
-          <div class="flex-start gap-sm mb-sm">
-            <span>✅</span>
-            <span class="text-sm">Theme: <span
-              id="statusTheme" class="text-gold">dark</span></span>
-          </div>
-          <div class="flex-start gap-sm mb-sm">
-            <span>✅</span>
-            <span class="text-sm">Navigation system active</span>
-          </div>
-          <div class="flex-start gap-sm mb-sm">
-            <span>✅</span>
-            <span class="text-sm">Toast system active</span>
-          </div>
-          <div class="flex-start gap-sm">
-            <span>✅</span>
-            <span class="text-sm">App init logic active</span>
-          </div>
-        </div>
-
-        <div class="card mb-md">
-          <div class="text-sm font-semibold text-secondary mb-md">
-            Test the engine
-          </div>
-          <button class="btn btn-primary mb-sm"
-            onclick="App.testToast()">
-            Test Toast Notification
-          </button>
-          <button class="btn btn-secondary mb-sm"
-            onclick="App.testProfile()">
-            Save Test Profile
-          </button>
-          <button class="btn btn-ghost"
-            onclick="App.resetAll()">
-            Reset All Data
-          </button>
-        </div>
-
-        <div class="card card-purple mb-md">
-          <div class="text-sm font-semibold text-secondary mb-sm">
-            Coming next
-          </div>
-          <div class="text-sm text-secondary"
-            style="line-height:var(--line-height-relaxed);">
-            Session 3 — Landing page.
-            Proper hero, problem statement,
-            how it works, CTA.
-          </div>
-        </div>
-
-        <div class="progress-bar mb-xs">
-          <div class="progress-fill" style="width:15%;"></div>
-        </div>
-        <div class="text-xs text-muted text-center">
-          MedPath V4 — Session 2 of ~15
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- PAGE: SUBJECTS                             -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-subjects">
-      <div class="placeholder-page">
-        <div class="placeholder-emoji">📚</div>
-        <div class="placeholder-title">Subjects</div>
-        <div class="placeholder-subtitle">
-          Subjects page coming in Session 9.
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- PAGE: PLANNER                              -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-planner">
-      <div class="placeholder-page">
-        <div class="placeholder-emoji">📅</div>
-        <div class="placeholder-title">Planner</div>
-        <div class="placeholder-subtitle">
-          Planner page coming in Session 10.
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- PAGE: PROGRESS                             -->
-    <!-- ========================================== -->
-
-    <div class="page" id="page-progress">
-      <div class="placeholder-page">
-        <div class="placeholder-emoji">📈</div>
-        <div class="placeholder-title">Progress</div>
-        <div class="placeholder-subtitle">
-          Progress page coming in Session 11.
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- BOTTOM NAVIGATION                          -->
-    <!-- ========================================== -->
-
-    <nav class="bottom-nav" id="bottomNav">
-      <button class="nav-item" id="nav-dashboard"
-        onclick="App.navigate('dashboard')">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label">Home</span>
-      </button>
-      <button class="nav-item" id="nav-subjects"
-        onclick="App.navigate('subjects')">
-        <span class="nav-icon">📚</span>
-        <span class="nav-label">Subjects</span>
-      </button>
-      <button class="nav-item" id="nav-planner"
-        onclick="App.navigate('planner')">
-        <span class="nav-icon">📅</span>
-        <span class="nav-label">Planner</span>
-      </button>
-      <button class="nav-item" id="nav-progress"
-        onclick="App.navigate('progress')">
-        <span class="nav-icon">📈</span>
-        <span class="nav-label">Progress</span>
-      </button>
-    </nav>
-
-  </div>
-
-  <!-- ============================================ -->
-  <!-- JAVASCRIPT START                             -->
-  <!-- ============================================ -->
-
-  <script>
-
-    // ============================================
-    // SECTION: JS — STORAGE ENGINE
-    // ============================================
-
-    const Storage = {
-
-      keys: {
-        profile:      'medpath_profile',
-        topicStates:  'medpath_topic_states',
-        examInstances:'medpath_exam_instances',
-        examStates:   'medpath_exam_states',
-        revisionQ:    'medpath_revision_queue',
-        streak:       'medpath_streak',
-        version:      'medpath_version'
-      },
-
-      get(key) {
-        try {
-          const val = localStorage.getItem(key);
-          return val ? JSON.parse(val) : null;
-        } catch(e) {
-          return null;
-        }
-      },
-
-      set(key, value) {
-        try {
-          localStorage.setItem(key, JSON.stringify(value));
-          return true;
-        } catch(e) {
-          return false;
-        }
-      },
-
-      remove(key) {
-        try {
-          localStorage.removeItem(key);
-          return true;
-        } catch(e) {
-          return false;
-        }
-      },
-
-      clearAll() {
-        try {
-          Object.values(this.keys).forEach(k => {
-            localStorage.removeItem(k);
-          });
-          return true;
-        } catch(e) {
-          return false;
-        }
-      },
-
-      getProfile() {
-        return this.get(this.keys.profile) || {
-          name: '',
-          year: '',
-          college: '',
-          theme: 'dark',
-          examGoal: '',
-          examDate: '',
-          dailyTopicGoal: 5,
-          onboardingComplete: false
-        };
-      },
-
-      saveProfile(profile) {
-        return this.set(this.keys.profile, profile);
-      },
-
-      getTopicStates() {
-        return this.get(this.keys.topicStates) || {};
-      },
-
-      saveTopicStates(states) {
-        return this.set(this.keys.topicStates, states);
-      },
-
-      getTopicState(topicId) {
-        const states = this.getTopicStates();
-        return states[topicId] || {
-          status: 'not_started',
-          confidence: 0,
-          firstStudied: null,
-          lastRevised: null,
-          notes: '',
-          revisionCount: 0,
-          examCompletions: [],
-          forgettingRisk: 'safe'
-        };
-      },
-
-      saveTopicState(topicId, state) {
-        const states = this.getTopicStates();
-        states[topicId] = state;
-        return this.saveTopicStates(states);
-      },
-
-      getStreak() {
-        return this.get(this.keys.streak) || {
-          current: 0,
-          best: 0,
-          lastStudyDate: null,
-          weeklyActivity: []
-        };
-      },
-
-      saveStreak(streak) {
-        return this.set(this.keys.streak, streak);
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — THEME ENGINE
-    // ============================================
-
-    const Theme = {
-
-      apply(theme) {
-        if (theme === 'light') {
-          document.body.classList.add('light-mode');
-        } else {
-          document.body.classList.remove('light-mode');
-        }
-        const btn = document.getElementById('themeToggleBtn');
-        if (btn) {
-          btn.textContent = theme === 'light' ? '☀️' : '🌙';
-        }
-        const statusTheme = document.getElementById('statusTheme');
-        if (statusTheme) {
-          statusTheme.textContent = theme;
-        }
-      },
-
-      toggle() {
-        const profile = Storage.getProfile();
-        const newTheme = profile.theme === 'light' ? 'dark' : 'light';
-        profile.theme = newTheme;
-        Storage.saveProfile(profile);
-        this.apply(newTheme);
-        Toast.show(
-          newTheme === 'light'
-            ? '☀️ Light mode on'
-            : '🌙 Dark mode on'
-        );
-      },
-
-      load() {
-        const profile = Storage.getProfile();
-        this.apply(profile.theme || 'dark');
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — NAVIGATION ENGINE
-    // ============================================
-
-    const Nav = {
-
-      currentPage: 'dashboard',
-      mainPages: ['dashboard','subjects','planner','progress'],
-
-      go(pageName) {
-        document.querySelectorAll('.page').forEach(p => {
-          p.classList.remove('active');
-        });
-
-        const target = document.getElementById('page-' + pageName);
-        if (target) {
-          target.classList.add('active');
-          this.currentPage = pageName;
-        }
-
-        document.querySelectorAll('.nav-item').forEach(n => {
-          n.classList.remove('active');
-        });
-        const activeNav = document.getElementById('nav-' + pageName);
-        if (activeNav) {
-          activeNav.classList.add('active');
-        }
-
-        const bottomNav = document.getElementById('bottomNav');
-        if (bottomNav) {
-          bottomNav.style.display =
-            this.mainPages.includes(pageName) ? 'flex' : 'none';
-        }
-
-        window.scrollTo(0, 0);
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — TOAST ENGINE
-    // ============================================
-
-    const Toast = {
-
-      timeout: null,
-
-      show(message, duration = 3000) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-
-        if (this.timeout) {
-          clearTimeout(this.timeout);
-          toast.classList.remove('show');
-        }
-
-        toast.textContent = message;
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            toast.classList.add('show');
-          });
-        });
-
-        this.timeout = setTimeout(() => {
-          toast.classList.remove('show');
-        }, duration);
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — TIME UTILITIES
-    // ============================================
-
-    const TimeUtil = {
-
-      getGreeting() {
-        const hour = new Date().getHours();
-        if (hour >= 5 && hour < 12)  return 'Good morning';
-        if (hour >= 12 && hour < 17) return 'Good afternoon';
-        if (hour >= 17 && hour < 21) return 'Good evening';
-        return 'Good night';
-      },
-
-      today() {
-        return new Date().toISOString().split('T')[0];
-      },
-
-      daysBetween(dateStr1, dateStr2) {
-        const d1 = new Date(dateStr1);
-        const d2 = new Date(dateStr2);
-        const diff = Math.abs(d2 - d1);
-        return Math.floor(diff / (1000 * 60 * 60 * 24));
-      },
-
-      formatDate(dateStr) {
-        if (!dateStr) return 'Never';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric'
-        });
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — APP CONTROLLER
-    // ============================================
-
-    const App = {
-
-      navigate(pageName) {
-        Nav.go(pageName);
-      },
-
-      toggleTheme() {
-        Theme.toggle();
-      },
-
-      showToast(message, duration) {
-        Toast.show(message, duration);
-      },
-
-      updateGreeting() {
-        const profile = Storage.getProfile();
-        const greetingEl = document.getElementById('dashGreeting');
-        const subtitleEl = document.getElementById('dashSubtitle');
-        const nameEl = document.getElementById('statusName');
-
-        if (greetingEl) {
-          const name = profile.name || '';
-          greetingEl.textContent = name
-            ? `${TimeUtil.getGreeting()}, ${name} 👋`
-            : `${TimeUtil.getGreeting()} 👋`;
-        }
-
-        if (subtitleEl) {
-          subtitleEl.textContent = profile.year
-            ? `${profile.year} Year · MedPath V4`
-            : 'MedPath V4';
-        }
-
-        if (nameEl) {
-          nameEl.textContent = profile.name || 'Not set';
-        }
-      },
-
-      completeOnboarding() {
-        const profile = Storage.getProfile();
-        profile.onboardingComplete = true;
-        Storage.saveProfile(profile);
-        Toast.show('✅ Onboarding marked complete');
-        Nav.go('dashboard');
-      },
-
-      testToast() {
-        Toast.show('🎉 Toast system is working perfectly!');
-      },
-
-      testProfile() {
-        const profile = Storage.getProfile();
-        profile.name = 'Test User';
-        profile.year = '2nd';
-        profile.college = 'Test Medical College';
-        Storage.saveProfile(profile);
-        this.updateGreeting();
-        Toast.show('✅ Test profile saved to localStorage');
-      },
-
-      resetAll() {
-        if (confirm(
-          'Reset all MedPath data? This cannot be undone.'
-        )) {
-          Storage.clearAll();
-          Toast.show('🗑️ All data cleared');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        }
-      },
-
-      init() {
-        Theme.load();
-        const profile = Storage.getProfile();
-
-        setTimeout(() => {
-          this.hideLoading();
-
-          if (!profile.onboardingComplete) {
-            Nav.go('landing');
-          } else {
-            Nav.go('dashboard');
-            this.updateGreeting();
-          }
-
-        }, 1200);
-      },
-
-      hideLoading() {
-        const loading = document.getElementById('loadingScreen');
-        const app = document.getElementById('appContainer');
-        if (!loading || !app) return;
-
-        loading.style.opacity = '0';
-        setTimeout(() => {
-          loading.style.display = 'none';
-          app.style.display = 'block';
-        }, 400);
-      }
-
-    };
-
-    // ============================================
-    // SECTION: JS — INIT
-    // ============================================
-
-    document.addEventListener('DOMContentLoaded', function() {
-      App.init();
-    });
-
-  </script>
-
-  <!-- ============================================ -->
-  <!-- JAVASCRIPT END                               -->
-  <!-- ============================================ -->
+<div class="loading-screen" id="loadingScreen">
+<div class="loading-logo">🏥</div>
+<div class="loading-wordmark">MedPath</div>
+<div class="loading-text">Preparing your revision system...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="app-container" id="appContainer" style="display:none;">
+
+<div class="page" id="page-landing">
+<div class="landing-page">
+
+<nav class="landing-nav">
+<div class="landing-logo">
+<span class="landing-logo-icon">🏥</span>
+<span class="landing-logo-text">MedPath</span>
+</div>
+<span class="landing-nav-badge">Free Forever</span>
+</nav>
+
+<section class="hero-section">
+<div class="hero-eyebrow animate-fade-in-up delay-1">⚡ The MBBS Revision Operating System</div>
+<h1 class="hero-headline animate-fade-in-up delay-2">Stop Forgetting<br/>What You Already<br/><span class="highlight">Studied.</span></h1>
+<p class="hero-subtext animate-fade-in-up delay-3">MedPath helps Indian MBBS students track, revise, and retain their entire syllabus — without the chaos. Built on spaced repetition science.</p>
+<div class="hero-cta-group animate-fade-in-up delay-4">
+<button class="btn btn-primary" onclick="App.navigate('onboarding')" style="font-size:17px;padding:16px 24px;">Start Free — No Signup</button>
+</div>
+<div class="hero-trust-row animate-fade-in-up delay-5">
+<span class="trust-item">✓ No account needed</span>
+<span class="trust-item">✓ Works offline</span>
+<span class="trust-item">✓ NMC aligned</span>
+</div>
+</section>
+
+<div class="stats-row animate-fade-in-up delay-6">
+<div class="stat-card"><div class="stat-number">700+</div><div class="stat-label">Topics Mapped</div></div>
+<div class="stat-card"><div class="stat-number">19</div><div class="stat-label">Subjects Covered</div></div>
+<div class="stat-card"><div class="stat-number">₹0</div><div class="stat-label">Cost Forever</div></div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section-header">
+<div class="section-eyebrow">The Real Problem</div>
+<h2 class="section-title">MBBS is not hard because you're lazy.</h2>
+<p class="section-subtitle">It becomes overwhelming because the system is designed to make you forget.</p>
+</div>
+
+<div class="problem-section">
+<div class="problem-card">
+<div class="problem-item"><span class="problem-icon">📚</span><span class="problem-text"><strong>The syllabus is massive.</strong> 19 subjects. 700+ topics. No clear path through it.</span></div>
+<div class="problem-item"><span class="problem-icon">🔀</span><span class="problem-text"><strong>Revision becomes random.</strong> You revise what feels urgent, not what actually needs revision.</span></div>
+<div class="problem-item"><span class="problem-icon">👻</span><span class="problem-text"><strong>Weak subjects stay hidden.</strong> You don't know which areas are silently getting weaker.</span></div>
+<div class="problem-item"><span class="problem-icon">📉</span><span class="problem-text"><strong>Consistency breaks easily.</strong> One missed week and you lose track of everything.</span></div>
+<div class="problem-item"><span class="problem-icon">❓</span><span class="problem-text"><strong>You forget what needs revision next.</strong> Topics studied weeks ago silently enter forgetting range.</span></div>
+</div>
+<div class="solution-callout"><div class="solution-callout-text">MedPath fixes the revision chaos.</div></div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section-header">
+<div class="section-eyebrow">How It Works</div>
+<h2 class="section-title">Four steps to revision clarity.</h2>
+</div>
+
+<div class="steps-section">
+<div class="step-item"><div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">Track topics honestly</div><div class="step-desc">Mark each topic as Not Started, In Progress, or Done. Rate your confidence from 1 to 5 stars.</div></div></div>
+<div class="step-item"><div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">MedPath detects your weak areas</div><div class="step-desc">The AI engine calculates forgetting risk for every topic based on confidence, time elapsed, and revision history.</div></div></div>
+<div class="step-item"><div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">Get a daily revision plan</div><div class="step-desc">Every day MedPath tells you exactly what to revise. Not random topics. The ones entering forgetting range.</div></div></div>
+<div class="step-item"><div class="step-left"><div class="step-number">4</div></div><div class="step-right"><div class="step-title">Maintain your streak</div><div class="step-desc">Build daily study habits. Watch your progress rings grow. Never lose track again.</div></div></div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section-header">
+<div class="section-eyebrow">Features</div>
+<h2 class="section-title">Everything you need.<br/>Nothing you don't.</h2>
+</div>
+
+<div class="features-section">
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">🧠</div><div><div class="feature-title">Spaced Repetition Engine</div><div class="feature-desc">Scientifically timed revision intervals. 3, 7, 14, and 30-day cycles. Based on your confidence ratings.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🎯</div><div><div class="feature-title">NMC + NEET-PG Aligned</div><div class="feature-desc">Every topic mapped to NMC 2024 competencies and NEET-PG signal strength. Study smarter, not harder.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-green">📱</div><div><div class="feature-title">100% Offline</div><div class="feature-desc">Everything saves on your device. No account. No server. No data shared. Works in your hostel, anywhere.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-red">🔥</div><div><div class="feature-title">Streak System</div><div class="feature-desc">Build daily study habits with streak tracking, milestone badges, and consistency rewards.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">📚</div><div><div class="feature-title">Exam Mode</div><div class="feature-desc">Create a separate tracker for upcoming university exams. Focused. Temporary. Intelligent.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🔗</div><div><div class="feature-title">Integration Modules</div><div class="feature-desc">Study Diabetes, TB, Anaemia across all subjects at once. See how medicine actually connects.</div></div></div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="final-cta-section">
+<div class="final-cta-emoji">🏥</div>
+<h2 class="final-cta-title">Your MBBS syllabus<br/>is already difficult.</h2>
+<p class="final-cta-subtitle">Your revision system should not be. Start with MedPath today. It takes 2 minutes to set up.</p>
+<button class="btn btn-primary" onclick="App.navigate('onboarding')" style="font-size:17px;padding:16px 24px;">Start Free Now</button>
+<div class="final-cta-trust">No signup · No ads · Works offline · Free forever</div>
+</div>
+
+</div>
+</div>
+
+<div class="page" id="page-onboarding">
+<div class="placeholder-page">
+<div class="placeholder-emoji">👋</div>
+<div class="placeholder-title">Onboarding</div>
+<div class="placeholder-subtitle">Onboarding flow coming in Session 4.</div>
+<button class="btn btn-primary" style="max-width:200px;" onclick="App.completeOnboarding()">Simulate Onboarding Done</button>
+</div>
+</div>
+
+<div class="page" id="page-dashboard">
+<div class="top-header">
+<div>
+<div class="header-title" id="dashGreeting">Good morning 👋</div>
+<div class="header-subtitle" id="dashSubtitle">MedPath V4</div>
+</div>
+<button class="btn btn-icon btn-secondary" id="themeToggleBtn" onclick="App.toggleTheme()">🌙</button>
+</div>
+<div class="page-content">
+
+<div class="card card-gold mb-md animate-fade-in">
+<div class="flex-between mb-sm">
+<span class="text-sm font-semibold text-gold">✅ Session 3 Complete</span>
+<span class="badge badge-foundation">Landing</span>
+</div>
+<div class="text-lg font-bold mb-xs">Landing page is live.</div>
+<div class="text-sm text-secondary" style="line-height:1.7;">Hero, problem section, how it works, features, and final CTA are all built. New users now see a proper landing page.</div>
+</div>
+
+<div class="card mb-md">
+<div class="text-sm font-semibold text-secondary mb-md">Test landing page</div>
+<button class="btn btn-secondary" onclick="App.navigate('landing')">View Landing Page</button>
+</div>
+
+<div class="card mb-md">
+<div class="text-sm font-semibold text-secondary mb-md">Reset test</div>
+<button class="btn btn-secondary" onclick="App.resetAll()">Reset All Data</button>
+</div>
+
+<div class="card card-purple mb-md">
+<div class="text-sm font-semibold text-secondary mb-sm">Coming next</div>
+<div class="text-sm text-secondary" style="line-height:1.7;">Session 4 — Onboarding flow. 5 steps: name, year, college, theme, exam goal.</div>
+</div>
+
+<div class="progress-bar mb-xs"><div class="progress-fill" style="width:22%;"></div></div>
+<div class="text-xs text-muted text-center">MedPath V4 — Session 3 of ~15</div>
+
+</div>
+</div>
+
+<div class="page" id="page-subjects"><div class="placeholder-page"><div class="placeholder-emoji">📚</div><div class="placeholder-title">Subjects</div><div class="placeholder-subtitle">Coming in Session 9.</div></div></div>
+<div class="page" id="page-planner"><div class="placeholder-page"><div class="placeholder-emoji">📅</div><div class="placeholder-title">Planner</div><div class="placeholder-subtitle">Coming in Session 10.</div></div></div>
+<div class="page" id="page-progress"><div class="placeholder-page"><div class="placeholder-emoji">📈</div><div class="placeholder-title">Progress</div><div class="placeholder-subtitle">Coming in Session 11.</div></div></div>
+
+<nav class="bottom-nav" id="bottomNav">
+<button class="nav-item" id="nav-dashboard" onclick="App.navigate('dashboard')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+<button class="nav-item" id="nav-subjects" onclick="App.navigate('subjects')"><span class="nav-icon">📚</span><span class="nav-label">Subjects</span></button>
+<button class="nav-item" id="nav-planner" onclick="App.navigate('planner')"><span class="nav-icon">📅</span><span class="nav-label">Planner</span></button>
+<button class="nav-item" id="nav-progress" onclick="App.navigate('progress')"><span class="nav-icon">📈</span><span class="nav-label">Progress</span></button>
+</nav>
+
+</div>
+
+<script>
+const Storage = {
+keys: { profile:'medpath_profile', topicStates:'medpath_topic_states', examInstances:'medpath_exam_instances', examStates:'medpath_exam_states', revisionQ:'medpath_revision_queue', streak:'medpath_streak', version:'medpath_version' },
+get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e) { return null; } },
+set(k,v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e) { return false; } },
+clearAll() { try { Object.values(this.keys).forEach(k => localStorage.removeItem(k)); return true; } catch(e) { return false; } },
+getProfile() { return this.get(this.keys.profile) || { name:'', year:'', college:'', theme:'dark', examGoal:'', examDate:'', dailyTopicGoal:5, onboardingComplete:false }; },
+saveProfile(p) { return this.set(this.keys.profile, p); }
+};
+
+const Theme = {
+apply(theme) {
+if (theme === 'light') document.body.classList.add('light-mode');
+else document.body.classList.remove('light-mode');
+const btn = document.getElementById('themeToggleBtn');
+if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+},
+toggle() {
+const p = Storage.getProfile();
+const newTheme = p.theme === 'light' ? 'dark' : 'light';
+p.theme = newTheme;
+Storage.saveProfile(p);
+this.apply(newTheme);
+Toast.show(newTheme === 'light' ? '☀️ Light mode on' : '🌙 Dark mode on');
+},
+load() {
+const p = Storage.getProfile();
+this.apply(p.theme || 'dark');
+}
+};
+
+const Nav = {
+currentPage: 'dashboard',
+mainPages: ['dashboard','subjects','planner','progress'],
+go(pageName) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+const target = document.getElementById('page-' + pageName);
+if (target) { target.classList.add('active'); this.currentPage = pageName; }
+document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+const activeNav = document.getElementById('nav-' + pageName);
+if (activeNav) activeNav.classList.add('active');
+const bottomNav = document.getElementById('bottomNav');
+if (bottomNav) bottomNav.style.display = this.mainPages.includes(pageName) ? 'flex' : 'none';
+window.scrollTo(0,0);
+}
+};
+
+const Toast = {
+timeout: null,
+show(message, duration = 3000) {
+const toast = document.getElementById('toast');
+if (!toast) return;
+if (this.timeout) { clearTimeout(this.timeout); toast.classList.remove('show'); }
+toast.textContent = message;
+requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+this.timeout = setTimeout(() => toast.classList.remove('show'), duration);
+}
+};
+
+const TimeUtil = {
+getGreeting() {
+const h = new Date().getHours();
+if (h >= 5 && h < 12) return 'Good morning';
+if (h >= 12 && h < 17) return 'Good afternoon';
+if (h >= 17 && h < 21) return 'Good evening';
+return 'Good night';
+}
+};
+
+const App = {
+navigate(page) { Nav.go(page); },
+toggleTheme() { Theme.toggle(); },
+showToast(m,d) { Toast.show(m,d); },
+updateGreeting() {
+const p = Storage.getProfile();
+const g = document.getElementById('dashGreeting');
+const s = document.getElementById('dashSubtitle');
+if (g) g.textContent = p.name ? `${TimeUtil.getGreeting()}, ${p.name} 👋` : `${TimeUtil.getGreeting()} 👋`;
+if (s) s.textContent = p.year ? `${p.year} Year · MedPath V4` : 'MedPath V4';
+},
+completeOnboarding() {
+const p = Storage.getProfile();
+p.onboardingComplete = true;
+Storage.saveProfile(p);
+Toast.show('✅ Setup complete. Welcome to MedPath.');
+Nav.go('dashboard');
+this.updateGreeting();
+},
+resetAll() {
+if (confirm('Reset all MedPath data? This cannot be undone.')) {
+Storage.clearAll();
+Toast.show('🗑️ All data cleared');
+setTimeout(() => window.location.reload(), 1500);
+}
+},
+init() {
+Theme.load();
+const p = Storage.getProfile();
+setTimeout(() => {
+this.hideLoading();
+if (!p.onboardingComplete) Nav.go('landing');
+else { Nav.go('dashboard'); this.updateGreeting(); }
+}, 1200);
+},
+hideLoading() {
+const l = document.getElementById('loadingScreen');
+const a = document.getElementById('appContainer');
+if (!l || !a) return;
+l.style.opacity = '0';
+setTimeout(() => { l.style.display = 'none'; a.style.display = 'block'; }, 400);
+}
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
 
 </body>
 </html>
