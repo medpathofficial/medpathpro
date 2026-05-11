@@ -31,6 +31,7 @@ body.light-mode {
 html { font-size:16px; -webkit-text-size-adjust:100%; }
 body { font-family:var(--font-family); font-size:var(--font-md); color:var(--text); background:var(--bg); min-height:100vh; overflow-x:hidden; transition:background var(--transition-normal),color var(--transition-normal); }
 button { font-family:var(--font-family); cursor:pointer; border:none; outline:none; background:none; }
+input { font-family:var(--font-family); outline:none; border:none; }
 .app-container { max-width:480px; margin:0 auto; min-height:100vh; position:relative; }
 .page { display:none; min-height:100vh; padding-bottom:90px; }
 .page.active { display:block; }
@@ -48,10 +49,14 @@ button { font-family:var(--font-family); cursor:pointer; border:none; outline:no
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-sm); padding:14px var(--space-lg); border-radius:var(--radius-md); font-size:var(--font-md); font-weight:600; transition:all var(--transition-fast); cursor:pointer; border:none; outline:none; width:100%; font-family:var(--font-family); }
 .btn-primary { background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark)); color:#000; box-shadow:var(--shadow-gold); }
 .btn-primary:active { transform:scale(0.98); }
+.btn-primary:disabled { opacity:0.4; cursor:not-allowed; }
 .btn-secondary { background:var(--bg-i); color:var(--text); border:1px solid rgba(255,255,255,0.08); }
 .btn-icon { width:40px; height:40px; padding:0; border-radius:var(--radius-md); flex-shrink:0; }
 .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--radius-full); font-size:var(--font-xs); font-weight:600; letter-spacing:0.3px; }
 .badge-foundation { background:rgba(99,102,241,0.15); color:var(--purple-light); border:1px solid rgba(99,102,241,0.3); }
+.input { width:100%; background:var(--bg-i); color:var(--text); padding:14px var(--space-md); border-radius:var(--radius-md); font-size:var(--font-md); border:1.5px solid transparent; transition:border-color var(--transition-fast); }
+.input:focus { border-color:var(--gold-primary); }
+.input::placeholder { color:var(--text-3); }
 .progress-bar { width:100%; height:6px; background:var(--bg-i); border-radius:var(--radius-full); overflow:hidden; }
 .progress-fill { height:100%; border-radius:var(--radius-full); background:linear-gradient(90deg,var(--gold-primary),var(--gold-light)); transition:width var(--transition-slow); }
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-around; padding:8px 0 24px; z-index:100; }
@@ -77,8 +82,11 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.08);opacity:0.8;} }
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
 @keyframes fadeInUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+@keyframes scaleIn { from{transform:scale(0.95);opacity:0;} to{transform:scale(1);opacity:1;} }
+@keyframes confettiFall { 0%{transform:translateY(-100vh) rotate(0deg);opacity:1;} 100%{transform:translateY(100vh) rotate(720deg);opacity:0;} }
 .animate-fade-in { animation:fadeIn var(--transition-normal) forwards; }
 .animate-fade-in-up { animation:fadeInUp 0.5s ease forwards; opacity:0; }
+.animate-scale-in { animation:scaleIn var(--transition-normal) forwards; }
 .delay-1{animation-delay:0.1s;} .delay-2{animation-delay:0.2s;} .delay-3{animation-delay:0.3s;} .delay-4{animation-delay:0.4s;} .delay-5{animation-delay:0.5s;} .delay-6{animation-delay:0.6s;}
 
 .landing-page { min-height:100vh; padding-bottom:var(--space-3xl); }
@@ -135,6 +143,80 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 .final-cta-subtitle { font-size:var(--font-sm); color:#71717a; line-height:1.7; margin-bottom:var(--space-lg); }
 .final-cta-trust { font-size:var(--font-xs); color:#52525b; margin-top:var(--space-md); }
 .section-divider { height:1px; background:rgba(255,255,255,0.04); margin:var(--space-lg) var(--space-md); }
+
+/* ONBOARDING */
+.onboarding-container { min-height:100vh; display:flex; flex-direction:column; padding:var(--space-md); padding-top:52px; padding-bottom:var(--space-xl); }
+.onboarding-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-lg); }
+.onboarding-back { width:40px; height:40px; border-radius:var(--radius-md); background:var(--bg-c); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text); cursor:pointer; transition:all var(--transition-fast); border:none; }
+.onboarding-back:active { transform:scale(0.92); }
+.onboarding-back:disabled { opacity:0.3; cursor:not-allowed; }
+.onboarding-step-counter { font-size:var(--font-xs); color:var(--text-3); font-weight:600; letter-spacing:0.5px; }
+.onboarding-progress { width:100%; height:4px; background:var(--bg-i); border-radius:var(--radius-full); overflow:hidden; margin-bottom:var(--space-xl); }
+.onboarding-progress-fill { height:100%; background:linear-gradient(90deg,var(--gold-primary),var(--gold-light)); border-radius:var(--radius-full); transition:width 0.4s cubic-bezier(0.4,0,0.2,1); }
+.onboarding-step { display:none; flex:1; flex-direction:column; }
+.onboarding-step.active { display:flex; animation:fadeInUp 0.4s ease forwards; }
+.onboarding-emoji { font-size:48px; margin-bottom:var(--space-md); text-align:center; }
+.onboarding-title { font-size:28px; font-weight:800; line-height:1.2; letter-spacing:-0.5px; color:var(--text); margin-bottom:var(--space-sm); text-align:center; }
+.onboarding-subtitle { font-size:var(--font-sm); color:var(--text-2); line-height:1.7; text-align:center; margin-bottom:var(--space-xl); }
+.onboarding-content { flex:1; display:flex; flex-direction:column; }
+.onboarding-actions { padding-top:var(--space-md); }
+.onboarding-error { color:var(--red); font-size:var(--font-xs); margin-top:var(--space-xs); padding-left:var(--space-xs); display:none; }
+.onboarding-error.show { display:block; }
+
+/* Year selection cards */
+.year-grid { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.year-card { background:var(--bg-c); border:2px solid transparent; border-radius:var(--radius-lg); padding:var(--space-md); cursor:pointer; transition:all var(--transition-fast); display:flex; align-items:center; gap:var(--space-md); text-align:left; width:100%; font-family:var(--font-family); }
+.year-card:active { transform:scale(0.98); }
+.year-card.selected { border-color:var(--gold-primary); background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(252,211,77,0.04)); }
+.year-card-emoji { font-size:32px; flex-shrink:0; }
+.year-card-content { flex:1; }
+.year-card-title { font-size:var(--font-md); font-weight:600; color:var(--text); margin-bottom:2px; }
+.year-card-desc { font-size:var(--font-xs); color:var(--text-3); line-height:1.5; }
+.year-card-check { width:24px; height:24px; border-radius:var(--radius-full); background:var(--bg-i); display:flex; align-items:center; justify-content:center; font-size:14px; color:transparent; transition:all var(--transition-fast); flex-shrink:0; }
+.year-card.selected .year-card-check { background:var(--gold-primary); color:#000; }
+
+/* College search */
+.college-search-wrap { position:relative; margin-bottom:var(--space-md); }
+.college-search-icon { position:absolute; left:var(--space-md); top:50%; transform:translateY(-50%); font-size:16px; color:var(--text-3); pointer-events:none; }
+.college-search-input { padding-left:42px; }
+.college-results { background:var(--bg-c); border-radius:var(--radius-lg); max-height:280px; overflow-y:auto; border:1px solid rgba(255,255,255,0.04); }
+.college-result-item { padding:12px var(--space-md); border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; transition:background var(--transition-fast); font-size:var(--font-sm); color:var(--text); }
+.college-result-item:last-child { border-bottom:none; }
+.college-result-item:active { background:var(--bg-i); }
+.college-result-empty { padding:var(--space-md); text-align:center; font-size:var(--font-sm); color:var(--text-3); }
+.college-selected { background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(252,211,77,0.04)); border:1.5px solid var(--gold-primary); border-radius:var(--radius-lg); padding:var(--space-md); display:flex; align-items:center; justify-content:space-between; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.college-selected-text { font-size:var(--font-sm); color:var(--text); font-weight:500; flex:1; line-height:1.4; }
+.college-selected-clear { background:none; border:none; color:var(--text-2); font-size:18px; cursor:pointer; padding:4px; }
+
+/* Theme picker */
+.theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.theme-card { border:2px solid transparent; border-radius:var(--radius-lg); padding:var(--space-md); cursor:pointer; transition:all var(--transition-fast); text-align:center; font-family:var(--font-family); }
+.theme-card:active { transform:scale(0.97); }
+.theme-card.selected { border-color:var(--gold-primary); }
+.theme-card-dark { background:#000; color:#fff; }
+.theme-card-light { background:#fff; color:#000; }
+.theme-preview { height:80px; border-radius:var(--radius-md); margin-bottom:var(--space-sm); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; }
+.theme-preview-dark { background:linear-gradient(135deg,#111,#000); border:1px solid rgba(255,255,255,0.1); }
+.theme-preview-light { background:linear-gradient(135deg,#fff,#f5f5f7); border:1px solid rgba(0,0,0,0.08); }
+.theme-preview-icon { font-size:24px; }
+.theme-card-title { font-size:var(--font-sm); font-weight:600; }
+
+/* Exam goal selection */
+.exam-goal-grid { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.exam-goal-card { background:var(--bg-c); border:2px solid transparent; border-radius:var(--radius-lg); padding:var(--space-md); cursor:pointer; transition:all var(--transition-fast); display:flex; align-items:center; gap:var(--space-md); text-align:left; width:100%; font-family:var(--font-family); }
+.exam-goal-card:active { transform:scale(0.98); }
+.exam-goal-card.selected { border-color:var(--gold-primary); background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(252,211,77,0.04)); }
+.exam-goal-emoji { font-size:24px; flex-shrink:0; }
+.exam-goal-content { flex:1; }
+.exam-goal-title { font-size:var(--font-md); font-weight:600; color:var(--text); margin-bottom:2px; }
+.exam-goal-desc { font-size:var(--font-xs); color:var(--text-3); line-height:1.5; }
+.exam-date-section { margin-top:var(--space-md); }
+.exam-date-label { font-size:var(--font-xs); color:var(--text-3); margin-bottom:var(--space-xs); padding-left:var(--space-xs); font-weight:500; letter-spacing:0.3px; }
+.exam-date-skip { text-align:center; font-size:var(--font-xs); color:var(--text-3); margin-top:var(--space-sm); }
+
+/* Confetti */
+.confetti-container { position:fixed; inset:0; pointer-events:none; z-index:99998; overflow:hidden; }
+.confetti-piece { position:absolute; width:10px; height:10px; top:0; }
 </style>
 </head>
 <body>
@@ -146,20 +228,17 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="confetti-container" id="confettiContainer" style="display:none;"></div>
 
 <div class="app-container" id="appContainer" style="display:none;">
 
+<!-- LANDING PAGE -->
 <div class="page" id="page-landing">
 <div class="landing-page">
-
 <nav class="landing-nav">
-<div class="landing-logo">
-<span class="landing-logo-icon">🏥</span>
-<span class="landing-logo-text">MedPath</span>
-</div>
+<div class="landing-logo"><span class="landing-logo-icon">🏥</span><span class="landing-logo-text">MedPath</span></div>
 <span class="landing-nav-badge">Free Forever</span>
 </nav>
-
 <section class="hero-section">
 <div class="hero-eyebrow animate-fade-in-up delay-1">⚡ The MBBS Revision Operating System</div>
 <h1 class="hero-headline animate-fade-in-up delay-2">Stop Forgetting<br/>What You Already<br/><span class="highlight">Studied.</span></h1>
@@ -173,21 +252,17 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 <span class="trust-item">✓ NMC aligned</span>
 </div>
 </section>
-
 <div class="stats-row animate-fade-in-up delay-6">
 <div class="stat-card"><div class="stat-number">700+</div><div class="stat-label">Topics Mapped</div></div>
 <div class="stat-card"><div class="stat-number">19</div><div class="stat-label">Subjects Covered</div></div>
 <div class="stat-card"><div class="stat-number">₹0</div><div class="stat-label">Cost Forever</div></div>
 </div>
-
 <div class="section-divider"></div>
-
 <div class="section-header">
 <div class="section-eyebrow">The Real Problem</div>
 <h2 class="section-title">MBBS is not hard because you're lazy.</h2>
 <p class="section-subtitle">It becomes overwhelming because the system is designed to make you forget.</p>
 </div>
-
 <div class="problem-section">
 <div class="problem-card">
 <div class="problem-item"><span class="problem-icon">📚</span><span class="problem-text"><strong>The syllabus is massive.</strong> 19 subjects. 700+ topics. No clear path through it.</span></div>
@@ -198,39 +273,31 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 </div>
 <div class="solution-callout"><div class="solution-callout-text">MedPath fixes the revision chaos.</div></div>
 </div>
-
 <div class="section-divider"></div>
-
 <div class="section-header">
 <div class="section-eyebrow">How It Works</div>
 <h2 class="section-title">Four steps to revision clarity.</h2>
 </div>
-
 <div class="steps-section">
 <div class="step-item"><div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">Track topics honestly</div><div class="step-desc">Mark each topic as Not Started, In Progress, or Done. Rate your confidence from 1 to 5 stars.</div></div></div>
 <div class="step-item"><div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">MedPath detects your weak areas</div><div class="step-desc">The AI engine calculates forgetting risk for every topic based on confidence, time elapsed, and revision history.</div></div></div>
 <div class="step-item"><div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div><div class="step-right"><div class="step-title">Get a daily revision plan</div><div class="step-desc">Every day MedPath tells you exactly what to revise. Not random topics. The ones entering forgetting range.</div></div></div>
 <div class="step-item"><div class="step-left"><div class="step-number">4</div></div><div class="step-right"><div class="step-title">Maintain your streak</div><div class="step-desc">Build daily study habits. Watch your progress rings grow. Never lose track again.</div></div></div>
 </div>
-
 <div class="section-divider"></div>
-
 <div class="section-header">
 <div class="section-eyebrow">Features</div>
 <h2 class="section-title">Everything you need.<br/>Nothing you don't.</h2>
 </div>
-
 <div class="features-section">
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">🧠</div><div><div class="feature-title">Spaced Repetition Engine</div><div class="feature-desc">Scientifically timed revision intervals. 3, 7, 14, and 30-day cycles. Based on your confidence ratings.</div></div></div>
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🎯</div><div><div class="feature-title">NMC + NEET-PG Aligned</div><div class="feature-desc">Every topic mapped to NMC 2024 competencies and NEET-PG signal strength. Study smarter, not harder.</div></div></div>
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-green">📱</div><div><div class="feature-title">100% Offline</div><div class="feature-desc">Everything saves on your device. No account. No server. No data shared. Works in your hostel, anywhere.</div></div></div>
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-red">🔥</div><div><div class="feature-title">Streak System</div><div class="feature-desc">Build daily study habits with streak tracking, milestone badges, and consistency rewards.</div></div></div>
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">📚</div><div><div class="feature-title">Exam Mode</div><div class="feature-desc">Create a separate tracker for upcoming university exams. Focused. Temporary. Intelligent.</div></div></div>
-<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🔗</div><div><div class="feature-title">Integration Modules</div><div class="feature-desc">Study Diabetes, TB, Anaemia across all subjects at once. See how medicine actually connects.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">🧠</div><div><div class="feature-title">Spaced Repetition Engine</div><div class="feature-desc">Scientifically timed revision intervals. 3, 7, 14, and 30-day cycles.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🎯</div><div><div class="feature-title">NMC + NEET-PG Aligned</div><div class="feature-desc">Every topic mapped to NMC 2024 competencies and NEET-PG signal strength.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-green">📱</div><div><div class="feature-title">100% Offline</div><div class="feature-desc">Everything saves on your device. No account. No server.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-red">🔥</div><div><div class="feature-title">Streak System</div><div class="feature-desc">Build daily study habits with streak tracking and consistency rewards.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-purple">📚</div><div><div class="feature-title">Exam Mode</div><div class="feature-desc">Create a separate tracker for upcoming university exams.</div></div></div>
+<div class="feature-card"><div class="feature-icon-wrap feature-icon-gold">🔗</div><div><div class="feature-title">Integration Modules</div><div class="feature-desc">Study Diabetes, TB, Anaemia across all subjects at once.</div></div></div>
 </div>
-
 <div class="section-divider"></div>
-
 <div class="final-cta-section">
 <div class="final-cta-emoji">🏥</div>
 <h2 class="final-cta-title">Your MBBS syllabus<br/>is already difficult.</h2>
@@ -238,19 +305,178 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 <button class="btn btn-primary" onclick="App.navigate('onboarding')" style="font-size:17px;padding:16px 24px;">Start Free Now</button>
 <div class="final-cta-trust">No signup · No ads · Works offline · Free forever</div>
 </div>
-
 </div>
 </div>
 
+<!-- ONBOARDING PAGE -->
 <div class="page" id="page-onboarding">
-<div class="placeholder-page">
-<div class="placeholder-emoji">👋</div>
-<div class="placeholder-title">Onboarding</div>
-<div class="placeholder-subtitle">Onboarding flow coming in Session 4.</div>
-<button class="btn btn-primary" style="max-width:200px;" onclick="App.completeOnboarding()">Simulate Onboarding Done</button>
+<div class="onboarding-container">
+
+<div class="onboarding-header">
+<button class="onboarding-back" id="onboardBackBtn" onclick="Onboard.prev()">←</button>
+<div class="onboarding-step-counter" id="onboardCounter">STEP 1 OF 5</div>
+<div style="width:40px;"></div>
+</div>
+
+<div class="onboarding-progress">
+<div class="onboarding-progress-fill" id="onboardProgress" style="width:20%;"></div>
+</div>
+
+<!-- STEP 1: NAME -->
+<div class="onboarding-step active" id="onboardStep1">
+<div class="onboarding-content">
+<div class="onboarding-emoji">👋</div>
+<div class="onboarding-title">What's your name?</div>
+<div class="onboarding-subtitle">We'll use this to personalize your dashboard.</div>
+<input type="text" class="input" id="nameInput" placeholder="Enter your first name" autocomplete="given-name" maxlength="30" />
+<div class="onboarding-error" id="nameError">Please enter at least 2 characters</div>
+</div>
+<div class="onboarding-actions">
+<button class="btn btn-primary" id="step1Next" onclick="Onboard.next()">Continue</button>
 </div>
 </div>
 
+<!-- STEP 2: YEAR -->
+<div class="onboarding-step" id="onboardStep2">
+<div class="onboarding-content">
+<div class="onboarding-emoji">🎓</div>
+<div class="onboarding-title">Which year are you in?</div>
+<div class="onboarding-subtitle">This helps MedPath show you the right subjects.</div>
+<div class="year-grid">
+<button class="year-card" data-year="1st" onclick="Onboard.selectYear('1st', this)">
+<span class="year-card-emoji">📘</span>
+<div class="year-card-content">
+<div class="year-card-title">1st Year</div>
+<div class="year-card-desc">Anatomy, Physiology, Biochemistry</div>
+</div>
+<div class="year-card-check">✓</div>
+</button>
+<button class="year-card" data-year="2nd" onclick="Onboard.selectYear('2nd', this)">
+<span class="year-card-emoji">🔬</span>
+<div class="year-card-content">
+<div class="year-card-title">2nd Year</div>
+<div class="year-card-desc">Pathology, Pharmacology, Microbiology</div>
+</div>
+<div class="year-card-check">✓</div>
+</button>
+<button class="year-card" data-year="3rd" onclick="Onboard.selectYear('3rd', this)">
+<span class="year-card-emoji">🏥</span>
+<div class="year-card-content">
+<div class="year-card-title">3rd Year</div>
+<div class="year-card-desc">Medicine, Surgery, FMT, Community, ENT, Ophth</div>
+</div>
+<div class="year-card-check">✓</div>
+</button>
+<button class="year-card" data-year="Final" onclick="Onboard.selectYear('Final', this)">
+<span class="year-card-emoji">⚕️</span>
+<div class="year-card-content">
+<div class="year-card-title">Final Year</div>
+<div class="year-card-desc">OBG, Paeds, Ortho, Psych, Derm, more</div>
+</div>
+<div class="year-card-check">✓</div>
+</button>
+</div>
+</div>
+<div class="onboarding-actions">
+<button class="btn btn-primary" id="step2Next" onclick="Onboard.next()" disabled>Continue</button>
+</div>
+</div>
+
+<!-- STEP 3: COLLEGE -->
+<div class="onboarding-step" id="onboardStep3">
+<div class="onboarding-content">
+<div class="onboarding-emoji">🏛️</div>
+<div class="onboarding-title">Which college?</div>
+<div class="onboarding-subtitle">Type to search. You can skip this if you'd like.</div>
+<div id="collegeSelectedWrap" style="display:none;">
+<div class="college-selected">
+<div class="college-selected-text" id="collegeSelectedText"></div>
+<button class="college-selected-clear" onclick="Onboard.clearCollege()">✕</button>
+</div>
+</div>
+<div id="collegeSearchWrap">
+<div class="college-search-wrap">
+<span class="college-search-icon">🔍</span>
+<input type="text" class="input college-search-input" id="collegeInput" placeholder="Search your college..." />
+</div>
+<div class="college-results" id="collegeResults" style="display:none;"></div>
+</div>
+</div>
+<div class="onboarding-actions">
+<button class="btn btn-primary" onclick="Onboard.next()">Continue</button>
+<div style="text-align:center;margin-top:8px;"><button class="btn btn-secondary" style="background:transparent;border:none;color:var(--text-3);" onclick="Onboard.skipCollege()">Skip for now</button></div>
+</div>
+</div>
+
+<!-- STEP 4: THEME -->
+<div class="onboarding-step" id="onboardStep4">
+<div class="onboarding-content">
+<div class="onboarding-emoji">🎨</div>
+<div class="onboarding-title">Pick your theme</div>
+<div class="onboarding-subtitle">You can change this anytime in settings.</div>
+<div class="theme-grid">
+<button class="theme-card theme-card-dark selected" data-theme="dark" onclick="Onboard.selectTheme('dark', this)">
+<div class="theme-preview theme-preview-dark">
+<div class="theme-preview-icon">🌙</div>
+</div>
+<div class="theme-card-title">Dark</div>
+</button>
+<button class="theme-card theme-card-light" data-theme="light" onclick="Onboard.selectTheme('light', this)">
+<div class="theme-preview theme-preview-light">
+<div class="theme-preview-icon">☀️</div>
+</div>
+<div class="theme-card-title">Light</div>
+</button>
+</div>
+</div>
+<div class="onboarding-actions">
+<button class="btn btn-primary" onclick="Onboard.next()">Continue</button>
+</div>
+</div>
+
+<!-- STEP 5: EXAM GOAL -->
+<div class="onboarding-step" id="onboardStep5">
+<div class="onboarding-content">
+<div class="onboarding-emoji">🎯</div>
+<div class="onboarding-title">What's your main goal?</div>
+<div class="onboarding-subtitle">This helps MedPath prioritize what to show you.</div>
+<div class="exam-goal-grid">
+<button class="exam-goal-card" data-goal="university" onclick="Onboard.selectGoal('university', this)">
+<span class="exam-goal-emoji">🎓</span>
+<div class="exam-goal-content">
+<div class="exam-goal-title">University Exams</div>
+<div class="exam-goal-desc">Pass professional exams</div>
+</div>
+</button>
+<button class="exam-goal-card" data-goal="neetpg" onclick="Onboard.selectGoal('neetpg', this)">
+<span class="exam-goal-emoji">🏆</span>
+<div class="exam-goal-content">
+<div class="exam-goal-title">NEET-PG / NExT</div>
+<div class="exam-goal-desc">Crack PG entrance</div>
+</div>
+</button>
+<button class="exam-goal-card" data-goal="both" onclick="Onboard.selectGoal('both', this)">
+<span class="exam-goal-emoji">⚡</span>
+<div class="exam-goal-content">
+<div class="exam-goal-title">Both</div>
+<div class="exam-goal-desc">Long-term + short-term</div>
+</div>
+</button>
+</div>
+<div class="exam-date-section" id="examDateSection" style="display:none;">
+<div class="exam-date-label">NEXT EXAM DATE (OPTIONAL)</div>
+<input type="date" class="input" id="examDateInput" />
+</div>
+</div>
+<div class="onboarding-actions">
+<button class="btn btn-primary" id="step5Finish" onclick="Onboard.finish()" disabled>Complete Setup</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- DASHBOARD -->
 <div class="page" id="page-dashboard">
 <div class="top-header">
 <div>
@@ -263,30 +489,35 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 
 <div class="card card-gold mb-md animate-fade-in">
 <div class="flex-between mb-sm">
-<span class="text-sm font-semibold text-gold">✅ Session 3 Complete</span>
-<span class="badge badge-foundation">Landing</span>
+<span class="text-sm font-semibold text-gold">✅ Session 4 Complete</span>
+<span class="badge badge-foundation">Onboarding</span>
 </div>
-<div class="text-lg font-bold mb-xs">Landing page is live.</div>
-<div class="text-sm text-secondary" style="line-height:1.7;">Hero, problem section, how it works, features, and final CTA are all built. New users now see a proper landing page.</div>
-</div>
-
-<div class="card mb-md">
-<div class="text-sm font-semibold text-secondary mb-md">Test landing page</div>
-<button class="btn btn-secondary" onclick="App.navigate('landing')">View Landing Page</button>
+<div class="text-lg font-bold mb-xs">5-step onboarding is live.</div>
+<div class="text-sm text-secondary" style="line-height:1.7;">Name, year, college, theme, and exam goal are all captured. Profile saved to localStorage.</div>
 </div>
 
 <div class="card mb-md">
-<div class="text-sm font-semibold text-secondary mb-md">Reset test</div>
-<button class="btn btn-secondary" onclick="App.resetAll()">Reset All Data</button>
+<div class="text-sm font-semibold text-secondary mb-md">Your profile</div>
+<div class="flex-start gap-sm mb-sm"><span>👤</span><span class="text-sm">Name: <span id="profName" class="text-gold">—</span></span></div>
+<div class="flex-start gap-sm mb-sm"><span>🎓</span><span class="text-sm">Year: <span id="profYear" class="text-gold">—</span></span></div>
+<div class="flex-start gap-sm mb-sm"><span>🏛️</span><span class="text-sm">College: <span id="profCollege" class="text-gold">—</span></span></div>
+<div class="flex-start gap-sm mb-sm"><span>🎯</span><span class="text-sm">Goal: <span id="profGoal" class="text-gold">—</span></span></div>
+<div class="flex-start gap-sm"><span>📅</span><span class="text-sm">Exam date: <span id="profExamDate" class="text-gold">—</span></span></div>
+</div>
+
+<div class="card mb-md">
+<div class="text-sm font-semibold text-secondary mb-md">Test</div>
+<button class="btn btn-secondary mb-sm" onclick="App.navigate('landing')">View Landing Page</button>
+<button class="btn btn-secondary" onclick="App.resetAll()">Reset & Restart Onboarding</button>
 </div>
 
 <div class="card card-purple mb-md">
 <div class="text-sm font-semibold text-secondary mb-sm">Coming next</div>
-<div class="text-sm text-secondary" style="line-height:1.7;">Session 4 — Onboarding flow. 5 steps: name, year, college, theme, exam goal.</div>
+<div class="text-sm text-secondary" style="line-height:1.7;">Session 5 — Core data schema + first subject. AI will request syllabus before building.</div>
 </div>
 
-<div class="progress-bar mb-xs"><div class="progress-fill" style="width:22%;"></div></div>
-<div class="text-xs text-muted text-center">MedPath V4 — Session 3 of ~15</div>
+<div class="progress-bar mb-xs"><div class="progress-fill" style="width:28%;"></div></div>
+<div class="text-xs text-muted text-center">MedPath V4 — Session 4 of ~15</div>
 
 </div>
 </div>
@@ -305,6 +536,37 @@ body.light-mode .bottom-nav { background:rgba(255,255,255,0.96); border-top:1px 
 </div>
 
 <script>
+
+// COLLEGE LIST
+const COLLEGES = [
+"AIIMS Delhi","AIIMS Bhopal","AIIMS Bhubaneswar","AIIMS Jodhpur","AIIMS Patna","AIIMS Raipur","AIIMS Rishikesh","AIIMS Nagpur","AIIMS Mangalagiri","AIIMS Gorakhpur","AIIMS Bibinagar","AIIMS Kalyani","AIIMS Deoghar","AIIMS Bilaspur","AIIMS Rajkot","AIIMS Vijaypur","AIIMS Madurai","AIIMS Guwahati",
+"Maulana Azad Medical College Delhi","Lady Hardinge Medical College Delhi","University College of Medical Sciences Delhi","Vardhman Mahavir Medical College Delhi","Atal Bihari Vajpayee Institute of Medical Sciences Delhi",
+"Christian Medical College Vellore","JIPMER Puducherry","Madras Medical College Chennai","Stanley Medical College Chennai","Kilpauk Medical College Chennai","Coimbatore Medical College","Madurai Medical College","Tirunelveli Medical College","Thanjavur Medical College",
+"Kasturba Medical College Manipal","Kasturba Medical College Mangalore","St Johns Medical College Bangalore","Bangalore Medical College","Mysore Medical College","JJM Medical College Davangere","Karnataka Institute of Medical Sciences Hubli","Government Medical College Bellary",
+"Grant Medical College Mumbai","Seth GS Medical College Mumbai","Lokmanya Tilak Medical College Mumbai","Topiwala National Medical College Mumbai","BJ Medical College Pune","Armed Forces Medical College Pune","Government Medical College Nagpur","Government Medical College Aurangabad","Government Medical College Miraj",
+"BJ Medical College Ahmedabad","MP Shah Medical College Jamnagar","Government Medical College Surat","Smt NHL Municipal Medical College Ahmedabad","GMERS Medical College Gandhinagar",
+"Maharaja Sayajirao University Vadodara","Government Medical College Bhavnagar",
+"King Georges Medical University Lucknow","Banaras Hindu University IMS Varanasi","Sarojini Naidu Medical College Agra","Maharani Laxmi Bai Medical College Jhansi","Motilal Nehru Medical College Allahabad","Lala Lajpat Rai Memorial Medical College Meerut","Government Medical College Kanpur","Subharti Medical College Meerut",
+"Government Medical College Patiala","Dayanand Medical College Ludhiana","Christian Medical College Ludhiana","Government Medical College Amritsar","Adesh Medical College Bathinda",
+"Government Medical College Chandigarh","PGIMER Chandigarh",
+"Calcutta Medical College Kolkata","Nil Ratan Sircar Medical College Kolkata","RG Kar Medical College Kolkata","Burdwan Medical College","North Bengal Medical College","Bankura Sammilani Medical College",
+"Osmania Medical College Hyderabad","Gandhi Medical College Hyderabad","Kakatiya Medical College Warangal","Government Medical College Nizamabad",
+"Andhra Medical College Visakhapatnam","Guntur Medical College","Kurnool Medical College","Sri Venkateswara Medical College Tirupati","Rangaraya Medical College Kakinada",
+"Government Medical College Trivandrum","Government Medical College Kottayam","Government Medical College Kozhikode","Government Medical College Thrissur","Amrita Institute of Medical Sciences Kochi","Government Medical College Ernakulam",
+"Sawai Man Singh Medical College Jaipur","Dr SN Medical College Jodhpur","RNT Medical College Udaipur","SP Medical College Bikaner","Jhalawar Medical College",
+"Government Medical College Bhopal","Gajra Raja Medical College Gwalior","Mahatma Gandhi Memorial Medical College Indore","Netaji Subhash Chandra Bose Medical College Jabalpur",
+"SCB Medical College Cuttack","MKCG Medical College Berhampur","VSS Medical College Burla",
+"Patna Medical College","Nalanda Medical College Patna","Indira Gandhi Institute of Medical Sciences Patna","Darbhanga Medical College","Sri Krishna Medical College Muzaffarpur",
+"Ranchi Institute of Medical Sciences","MGM Medical College Jamshedpur",
+"Government Medical College Srinagar","Government Medical College Jammu",
+"Indira Gandhi Medical College Shimla","Dr Rajendra Prasad Government Medical College Tanda",
+"Government Doon Medical College Dehradun","Himalayan Institute of Medical Sciences Dehradun",
+"Goa Medical College Bambolim",
+"Gauhati Medical College","Silchar Medical College","Assam Medical College Dibrugarh",
+"Government Medical College Surat","BJ Medical College Pune"
+];
+
+// STORAGE
 const Storage = {
 keys: { profile:'medpath_profile', topicStates:'medpath_topic_states', examInstances:'medpath_exam_instances', examStates:'medpath_exam_states', revisionQ:'medpath_revision_queue', streak:'medpath_streak', version:'medpath_version' },
 get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e) { return null; } },
@@ -314,6 +576,7 @@ getProfile() { return this.get(this.keys.profile) || { name:'', year:'', college
 saveProfile(p) { return this.set(this.keys.profile, p); }
 };
 
+// THEME
 const Theme = {
 apply(theme) {
 if (theme === 'light') document.body.classList.add('light-mode');
@@ -329,12 +592,10 @@ Storage.saveProfile(p);
 this.apply(newTheme);
 Toast.show(newTheme === 'light' ? '☀️ Light mode on' : '🌙 Dark mode on');
 },
-load() {
-const p = Storage.getProfile();
-this.apply(p.theme || 'dark');
-}
+load() { const p = Storage.getProfile(); this.apply(p.theme || 'dark'); }
 };
 
+// NAV
 const Nav = {
 currentPage: 'dashboard',
 mainPages: ['dashboard','subjects','planner','progress'],
@@ -351,6 +612,7 @@ window.scrollTo(0,0);
 }
 };
 
+// TOAST
 const Toast = {
 timeout: null,
 show(message, duration = 3000) {
@@ -363,6 +625,7 @@ this.timeout = setTimeout(() => toast.classList.remove('show'), duration);
 }
 };
 
+// TIME
 const TimeUtil = {
 getGreeting() {
 const h = new Date().getHours();
@@ -370,44 +633,240 @@ if (h >= 5 && h < 12) return 'Good morning';
 if (h >= 12 && h < 17) return 'Good afternoon';
 if (h >= 17 && h < 21) return 'Good evening';
 return 'Good night';
+},
+formatDate(d) {
+if (!d) return 'Not set';
+const date = new Date(d);
+return date.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
 }
 };
 
+// CONFETTI
+const Confetti = {
+fire() {
+const container = document.getElementById('confettiContainer');
+container.style.display = 'block';
+container.innerHTML = '';
+const colors = ['#f59e0b','#fcd34d','#6366f1','#22c55e','#ef4444','#818cf8'];
+const count = 60;
+for (let i = 0; i < count; i++) {
+const piece = document.createElement('div');
+piece.className = 'confetti-piece';
+piece.style.left = Math.random() * 100 + '%';
+piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+piece.style.animationDelay = (Math.random() * 0.5) + 's';
+piece.style.animation = `confettiFall ${2 + Math.random() * 1.5}s ease-out forwards`;
+piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+container.appendChild(piece);
+}
+setTimeout(() => { container.style.display = 'none'; container.innerHTML = ''; }, 4000);
+}
+};
+
+// ONBOARDING
+const Onboard = {
+currentStep: 1,
+totalSteps: 5,
+data: { name:'', year:'', college:'', theme:'dark', examGoal:'', examDate:'' },
+
+start() {
+this.currentStep = 1;
+this.data = { name:'', year:'', college:'', theme:'dark', examGoal:'', examDate:'' };
+this.render();
+this.attachListeners();
+},
+
+attachListeners() {
+const nameInput = document.getElementById('nameInput');
+if (nameInput) {
+nameInput.addEventListener('input', (e) => {
+this.data.name = e.target.value.trim();
+const err = document.getElementById('nameError');
+if (err) err.classList.remove('show');
+});
+nameInput.addEventListener('keypress', (e) => {
+if (e.key === 'Enter') this.next();
+});
+}
+const collegeInput = document.getElementById('collegeInput');
+if (collegeInput) {
+collegeInput.addEventListener('input', (e) => this.searchColleges(e.target.value));
+}
+const examDateInput = document.getElementById('examDateInput');
+if (examDateInput) {
+examDateInput.addEventListener('change', (e) => { this.data.examDate = e.target.value; });
+const today = new Date().toISOString().split('T')[0];
+examDateInput.min = today;
+}
+},
+
+render() {
+document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
+const step = document.getElementById('onboardStep' + this.currentStep);
+if (step) step.classList.add('active');
+const counter = document.getElementById('onboardCounter');
+if (counter) counter.textContent = `STEP ${this.currentStep} OF ${this.totalSteps}`;
+const progress = document.getElementById('onboardProgress');
+if (progress) progress.style.width = (this.currentStep / this.totalSteps * 100) + '%';
+const back = document.getElementById('onboardBackBtn');
+if (back) back.disabled = this.currentStep === 1;
+window.scrollTo(0,0);
+if (this.currentStep === 1) {
+setTimeout(() => { const ni = document.getElementById('nameInput'); if (ni) ni.focus(); }, 350);
+}
+},
+
+next() {
+if (this.currentStep === 1) {
+const name = (this.data.name || '').trim();
+if (name.length < 2) {
+const err = document.getElementById('nameError');
+if (err) err.classList.add('show');
+return;
+}
+}
+if (this.currentStep < this.totalSteps) {
+this.currentStep++;
+this.render();
+}
+},
+
+prev() {
+if (this.currentStep > 1) {
+this.currentStep--;
+this.render();
+}
+},
+
+selectYear(year, btn) {
+this.data.year = year;
+document.querySelectorAll('[data-year]').forEach(c => c.classList.remove('selected'));
+btn.classList.add('selected');
+const nextBtn = document.getElementById('step2Next');
+if (nextBtn) nextBtn.disabled = false;
+},
+
+searchColleges(query) {
+const results = document.getElementById('collegeResults');
+if (!query || query.length < 2) {
+results.style.display = 'none';
+return;
+}
+const q = query.toLowerCase();
+const matches = COLLEGES.filter(c => c.toLowerCase().includes(q)).slice(0, 8);
+if (matches.length === 0) {
+results.innerHTML = `<div class="college-result-empty">No matches. You can type your own and tap below.</div><div class="college-result-item" onclick="Onboard.selectCollege('${query.replace(/'/g, "")}')">➕ Use "${query}"</div>`;
+results.style.display = 'block';
+return;
+}
+results.innerHTML = matches.map(c => `<div class="college-result-item" onclick="Onboard.selectCollege('${c.replace(/'/g, "")}')">${c}</div>`).join('');
+results.style.display = 'block';
+},
+
+selectCollege(name) {
+this.data.college = name;
+document.getElementById('collegeSearchWrap').style.display = 'none';
+document.getElementById('collegeSelectedWrap').style.display = 'block';
+document.getElementById('collegeSelectedText').textContent = name;
+document.getElementById('collegeResults').style.display = 'none';
+document.getElementById('collegeInput').value = '';
+},
+
+clearCollege() {
+this.data.college = '';
+document.getElementById('collegeSearchWrap').style.display = 'block';
+document.getElementById('collegeSelectedWrap').style.display = 'none';
+},
+
+skipCollege() {
+this.data.college = '';
+this.next();
+},
+
+selectTheme(theme, btn) {
+this.data.theme = theme;
+document.querySelectorAll('[data-theme]').forEach(c => c.classList.remove('selected'));
+btn.classList.add('selected');
+Theme.apply(theme);
+},
+
+selectGoal(goal, btn) {
+this.data.examGoal = goal;
+document.querySelectorAll('[data-goal]').forEach(c => c.classList.remove('selected'));
+btn.classList.add('selected');
+const dateSection = document.getElementById('examDateSection');
+if (dateSection) dateSection.style.display = 'block';
+const finishBtn = document.getElementById('step5Finish');
+if (finishBtn) finishBtn.disabled = false;
+},
+
+finish() {
+const profile = Storage.getProfile();
+profile.name = this.data.name;
+profile.year = this.data.year;
+profile.college = this.data.college;
+profile.theme = this.data.theme;
+profile.examGoal = this.data.examGoal;
+profile.examDate = this.data.examDate;
+profile.onboardingComplete = true;
+Storage.saveProfile(profile);
+Theme.apply(this.data.theme);
+Confetti.fire();
+Toast.show(`🎉 Welcome to MedPath, ${this.data.name}!`, 4000);
+setTimeout(() => {
+Nav.go('dashboard');
+App.updateDashboard();
+}, 1500);
+}
+};
+
+// APP
 const App = {
-navigate(page) { Nav.go(page); },
+navigate(page) {
+Nav.go(page);
+if (page === 'onboarding') Onboard.start();
+if (page === 'dashboard') this.updateDashboard();
+},
 toggleTheme() { Theme.toggle(); },
 showToast(m,d) { Toast.show(m,d); },
-updateGreeting() {
+
+updateDashboard() {
 const p = Storage.getProfile();
 const g = document.getElementById('dashGreeting');
 const s = document.getElementById('dashSubtitle');
 if (g) g.textContent = p.name ? `${TimeUtil.getGreeting()}, ${p.name} 👋` : `${TimeUtil.getGreeting()} 👋`;
 if (s) s.textContent = p.year ? `${p.year} Year · MedPath V4` : 'MedPath V4';
+const profName = document.getElementById('profName');
+const profYear = document.getElementById('profYear');
+const profCollege = document.getElementById('profCollege');
+const profGoal = document.getElementById('profGoal');
+const profExamDate = document.getElementById('profExamDate');
+if (profName) profName.textContent = p.name || '—';
+if (profYear) profYear.textContent = p.year ? `${p.year} Year` : '—';
+if (profCollege) profCollege.textContent = p.college || '—';
+const goalMap = { university:'University Exams', neetpg:'NEET-PG / NExT', both:'Both' };
+if (profGoal) profGoal.textContent = goalMap[p.examGoal] || '—';
+if (profExamDate) profExamDate.textContent = TimeUtil.formatDate(p.examDate);
 },
-completeOnboarding() {
-const p = Storage.getProfile();
-p.onboardingComplete = true;
-Storage.saveProfile(p);
-Toast.show('✅ Setup complete. Welcome to MedPath.');
-Nav.go('dashboard');
-this.updateGreeting();
-},
+
 resetAll() {
-if (confirm('Reset all MedPath data? This cannot be undone.')) {
+if (confirm('Reset all MedPath data? This will restart onboarding.')) {
 Storage.clearAll();
 Toast.show('🗑️ All data cleared');
-setTimeout(() => window.location.reload(), 1500);
+setTimeout(() => window.location.reload(), 1200);
 }
 },
+
 init() {
 Theme.load();
 const p = Storage.getProfile();
 setTimeout(() => {
 this.hideLoading();
 if (!p.onboardingComplete) Nav.go('landing');
-else { Nav.go('dashboard'); this.updateGreeting(); }
+else { Nav.go('dashboard'); this.updateDashboard(); }
 }, 1200);
 },
+
 hideLoading() {
 const l = document.getElementById('loadingScreen');
 const a = document.getElementById('appContainer');
