@@ -1821,7 +1821,575 @@ const Onboarding={
 // INJECT-POINT: REVISION-ENGINE
 // Paste revision engine below this line (Session 7)
 // ============================================================
+// ============================================================
+// SESSION 7 — REVISION ENGINE
+// MedPath V4 — Priority Scoring + Spaced Repetition
+// Scaffolds: AUTH-READY, SYNC-HOOK, NOTIFICATION-TRIGGER
+// ============================================================
 
+const RevisionEngine = (() => {
+
+  // ----------------------------------------------------------
+  // SCAFFOLD: SYNC-HOOK
+  // All storage reads/writes go through MPStorage
+  // Swap internals here when cloud sync is added
+  // ----------------------------------------------------------
+  const MPStorage = {
+    get: (key) => {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : null;
+      } catch { return null; }
+    },
+    set: (key, value) => {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch { return false; }
+    },
+    // SCAFFOLD: AUTH-READY
+    // When Firebase added:
+    // getUserId() returns firebase.auth().currentUser.uid
+    // All keys become userId + '_' + key
+    getUserId: () => {
+      const profile = MPStorage.get('medpath_profile');
+      return profile?.id || 'local_user';
+    }
+  };
+
+  // ----------------------------------------------------------
+  // PRIORITY SCORING ENGINE
+  // Score 0-99 per topic
+  // ----------------------------------------------------------
+  const calculatePriority = (topicState, topic, profile) => {
+    let score = 0;
+    const now = Date.now();
+    const userYear = profile?.year || 1;
+
+    // Year relevance (+30 max)
+    if (topic?.subjectYear === userYear) score += 30;
+    else if (topic?.subjectYear === userYear - 1) score += 15;
+    else score += 5;
+
+    // Tier weight
+    const tierScores = {
+      essential: 28,
+      pg: 20,
+      foundation: 15,
+      proff: 5
+    };
+    score += tierScores[topic?.tier] || 5;
+
+    // Status
+    const statusScores = {
+      in_progress: 20,
+      not_started: 15,
+      done: 5
+    };
+    score += statusScores[topicState?.status] || 15;
+
+    // Confidence (inverse — lower confidence = higher priority)
+    const conf = topicState?.confidence || 0;
+    if (conf === 0) score += 28;
+    else if (conf === 1) score += 28;
+    else if (conf === 2) score += 22;
+    else if (conf === 3) score += 15;
+    else if (conf === 4) score += 8;
+    else if (conf === 5) score += 2;
+
+    // Days since last study
+    if (topicState?.lastStudied) {
+      const daysSince = (now - topicState.lastStudied) / (1000 * 60 * 60 * 24);
+      if (daysSince >= 30) score += 28;
+      else if (daysSince >= 14) score += 20;
+      else if (daysSince >= 7) score += 12;
+      else if (daysSince >= 3) score += 5;
+    }
+
+    return Math.min(score, 99);
+  };
+
+  // ----------------------------------------------------------
+  // PRIORITY BAND
+  // ----------------------------------------------------------
+  const getPriorityBand = (score) => {
+    if (score >= 75) return { label: 'High', color: '#ef4444' };
+    if (score >= 50) return { label: 'Medium', color: '#eab308' };
+    return { label: 'Low', color: '#22c55e' };
+  };
+
+  // ----------------------------------------------------------
+  // SPACED REPETITION INTERVALS (days)
+  // ----------------------------------------------------------
+  const SRS_INTERVALS = [3, 7, 14, 30, 60];
+
+  const getNextReviewDate = (revisionCount) => {
+    const interval = SRS_INTERVALS[Math.min(revisionCount, SRS_INTERVALS.length - 1)];
+    return Date.now() + interval * 24 * 60 * 60 * 1000;
+  };
+
+  // ----------------------------------------------------------
+  // FORGETTING RISK
+  // ----------------------------------------------------------
+  const getForgettingRisk = (topicState) => {
+    if (!topicState?.nextReview) return 'safe';
+    const now = Date.now();
+    const diff = topicState.nextReview - now;
+    const days = diff / (1000 * 60 * 60 * 24);
+
+    if (days < -14) return 'critical';
+    if (days < 0) return 'overdue';
+    if (days <= 2) return 'due_soon';
+    return 'safe';
+  };
+
+  const forgettingRiskDisplay = {
+    safe:     { label: 'Safe',      emoji: '✅', color: '#22c55e' },
+    due_soon: { label: 'Due Soon',  emoji: '⏳', color: '#f97316' },
+    overdue:  { label: 'Overdue',   emoji: '⚠️', color: '#eab308' },
+    critical: { label: 'Critical',  emoji: '🔴', color: '#ef4444' }
+  };
+
+  // ----------------------------------------------------------
+  // MARK TOPIC DONE (with SRS update)
+  // ----------------------------------------------------------
+  const markTopicDone = (topicId) => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const existing = states[topicId] || {};
+    const revCount = (existing.revisionCount || 0) + 1;
+
+    states[topicId] = {
+      ...existing,
+      status: 'done',
+      lastStudied: Date.now(),
+      firstStudied: existing.firstStudied || Date.now(),
+      revisionCount: revCount,
+      nextReview: getNextReviewDate(revCount)
+    };
+
+    MPStorage.set('medpath_topic_states', states);
+
+    // Update revision queue
+    updateRevisionQueue(topicId, states[topicId]);
+
+    // Update streak
+    updateStreak();
+
+    // SCAFFOLD: NOTIFICATION-TRIGGER
+    // When push service added:
+    // scheduleNotification(topicId, states[topicId].nextReview)
+    NotificationScaffold.scheduleLocal(topicId, states[topicId].nextReview);
+
+    return states[topicId];
+  };
+
+  // ----------------------------------------------------------
+  // MARK TOPIC IN PROGRESS
+  // ----------------------------------------------------------
+  const markTopicInProgress = (topicId) => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const existing = states[topicId] || {};
+
+    states[topicId] = {
+      ...existing,
+      status: 'in_progress',
+      lastStudied: Date.now(),
+      firstStudied: existing.firstStudied || Date.now()
+    };
+
+    MPStorage.set('medpath_topic_states', states);
+    return states[topicId];
+  };
+
+  // ----------------------------------------------------------
+  // SET CONFIDENCE
+  // ----------------------------------------------------------
+  const setConfidence = (topicId, stars) => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const existing = states[topicId] || {};
+
+    states[topicId] = {
+      ...existing,
+      confidence: stars,
+      lastStudied: Date.now()
+    };
+
+    MPStorage.set('medpath_topic_states', states);
+    return states[topicId];
+  };
+
+  // ----------------------------------------------------------
+  // SAVE NOTES
+  // ----------------------------------------------------------
+  const saveNotes = (topicId, notes) => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const existing = states[topicId] || {};
+
+    states[topicId] = { ...existing, notes };
+    MPStorage.set('medpath_topic_states', states);
+  };
+
+  // ----------------------------------------------------------
+  // REVISION QUEUE
+  // ----------------------------------------------------------
+  const updateRevisionQueue = (topicId, topicState) => {
+    const queue = MPStorage.get('medpath_revision_queue') || [];
+    const filtered = queue.filter(item => item.topicId !== topicId);
+
+    filtered.push({
+      topicId,
+      nextReview: topicState.nextReview,
+      revisionCount: topicState.revisionCount
+    });
+
+    // Sort by nextReview ascending
+    filtered.sort((a, b) => a.nextReview - b.nextReview);
+    MPStorage.set('medpath_revision_queue', filtered);
+  };
+
+  const getTodaysRevisions = () => {
+    const queue = MPStorage.get('medpath_revision_queue') || [];
+    const now = Date.now();
+    const endOfDay = now + 24 * 60 * 60 * 1000;
+
+    return queue.filter(item => item.nextReview <= endOfDay);
+  };
+
+  const getOverdueRevisions = () => {
+    const queue = MPStorage.get('medpath_revision_queue') || [];
+    const now = Date.now();
+    return queue.filter(item => item.nextReview < now);
+  };
+
+  // ----------------------------------------------------------
+  // SMART PLAN GENERATOR
+  // Generates Today's Plan based on priority scoring
+  // Works for new users (pre-curated) and returning users (real data)
+  // ----------------------------------------------------------
+  const generateSmartPlan = (profile) => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const allTopics = window.MedPathData?.getAllTopics?.() || [];
+    const userYear = profile?.year || 1;
+
+    // Check if new user (less than 5 topics touched)
+    const touchedCount = Object.keys(states).length;
+    const isNewUser = touchedCount < 5;
+
+    if (isNewUser) {
+      return generateStarterPlan(profile, userYear);
+    }
+
+    // Returning user — real priority scoring
+    const scoredTopics = allTopics
+      .map(topic => {
+        const state = states[topic.id] || {};
+        const score = calculatePriority(state, topic, profile);
+        const risk = getForgettingRisk(state);
+        return { topic, state, score, risk };
+      })
+      .filter(item => item.state.status !== 'done' || item.risk === 'overdue' || item.risk === 'critical')
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+
+    const todaysRevisions = getTodaysRevisions();
+    const overdueRevisions = getOverdueRevisions();
+
+    return {
+      type: 'returning',
+      topPriority: scoredTopics.slice(0, 3),
+      todaysRevisions,
+      overdueRevisions,
+      totalSuggested: scoredTopics.length
+    };
+  };
+
+  // ----------------------------------------------------------
+  // STARTER PLAN — for new users with no data
+  // Pre-curated value so dashboard is never empty
+  // ----------------------------------------------------------
+  const generateStarterPlan = (profile, userYear) => {
+    const starterTopics = {
+      1: [
+        { name: 'Brachial Plexus', subject: 'Anatomy', tier: 'essential', why: 'Most asked in practicals' },
+        { name: 'Cell Membrane Transport', subject: 'Physiology', tier: 'essential', why: 'Foundation for everything' },
+        { name: 'Krebs Cycle', subject: 'Biochemistry', tier: 'essential', why: 'Highest yield in theory' },
+        { name: 'Vertebral Column', subject: 'Anatomy', tier: 'essential', why: 'Clinical relevance' },
+        { name: 'Action Potential', subject: 'Physiology', tier: 'essential', why: 'Core concept' }
+      ],
+      2: [
+        { name: 'Cell Injury', subject: 'Pathology', tier: 'essential', why: 'Pathology foundation' },
+        { name: 'Beta Lactams', subject: 'Pharmacology', tier: 'essential', why: 'Most prescribed drugs' },
+        { name: 'Koch\'s Postulates', subject: 'Microbiology', tier: 'essential', why: 'Exam favourite' },
+        { name: 'Inflammation', subject: 'Pathology', tier: 'essential', why: 'Highest yield topic' },
+        { name: 'Autonomic Pharmacology', subject: 'Pharmacology', tier: 'essential', why: 'NEET PG favourite' }
+      ],
+      3: [
+        { name: 'Diabetes Mellitus', subject: 'Medicine', tier: 'essential', why: 'Most common case' },
+        { name: 'Normal Labour', subject: 'OBG', tier: 'essential', why: 'Core clinical skill' },
+        { name: 'Appendicitis', subject: 'Surgery', tier: 'essential', why: 'Most common surgery case' },
+        { name: 'Pneumonia', subject: 'Medicine', tier: 'essential', why: 'High NEET weight' },
+        { name: 'Neonatal Jaundice', subject: 'Paediatrics', tier: 'essential', why: 'Common ward case' }
+      ]
+    };
+
+    const topics = starterTopics[userYear] || starterTopics[1];
+
+    return {
+      type: 'starter',
+      message: `Most ${userYear === 1 ? 'first year' : userYear === 2 ? 'second year' : 'final year'} students start here`,
+      suggestedTopics: topics,
+      tip: 'Mark your first topic done to activate your revision engine'
+    };
+  };
+
+  // ----------------------------------------------------------
+  // STREAK SYSTEM
+  // ----------------------------------------------------------
+  const updateStreak = () => {
+    const streak = MPStorage.get('medpath_streak') || {
+      current: 0,
+      longest: 0,
+      lastStudyDate: null
+    };
+
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+    if (streak.lastStudyDate === today) {
+      // Already counted today
+      MPStorage.set('medpath_streak', streak);
+      return streak;
+    }
+
+    if (streak.lastStudyDate === yesterday) {
+      // Continuing streak
+      streak.current += 1;
+    } else {
+      // Streak broken or first time
+      streak.current = 1;
+    }
+
+    streak.longest = Math.max(streak.longest, streak.current);
+    streak.lastStudyDate = today;
+
+    MPStorage.set('medpath_streak', streak);
+    return streak;
+  };
+
+  const getStreak = () => {
+    return MPStorage.get('medpath_streak') || { current: 0, longest: 0 };
+  };
+
+  const getStreakEmoji = (days) => {
+    if (days >= 100) return '👑';
+    if (days >= 50)  return '💎';
+    if (days >= 20)  return '⚡';
+    return '🔥';
+  };
+
+  const isStreakAtRisk = () => {
+    const streak = MPStorage.get('medpath_streak');
+    if (!streak?.lastStudyDate) return false;
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    return streak.lastStudyDate === yesterday && streak.current > 0;
+  };
+
+  // ----------------------------------------------------------
+  // PROGRESS SUMMARY
+  // ----------------------------------------------------------
+  const getProgressSummary = () => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const allTopics = window.MedPathData?.getAllTopics?.() || [];
+    const total = allTopics.length;
+
+    let done = 0, inProgress = 0, notStarted = 0;
+    let essentialDone = 0, essentialTotal = 0;
+
+    allTopics.forEach(topic => {
+      const state = states[topic.id];
+      if (topic.tier === 'essential') essentialTotal++;
+
+      if (!state || state.status === 'not_started') {
+        notStarted++;
+      } else if (state.status === 'in_progress') {
+        inProgress++;
+      } else if (state.status === 'done') {
+        done++;
+        if (topic.tier === 'essential') essentialDone++;
+      }
+    });
+
+    const percentDone = total > 0 ? Math.round((done / total) * 100) : 0;
+    const essentialPercent = essentialTotal > 0 ? Math.round((essentialDone / essentialTotal) * 100) : 0;
+
+    return {
+      total, done, inProgress, notStarted,
+      percentDone, essentialDone,
+      essentialTotal, essentialPercent
+    };
+  };
+
+  // ----------------------------------------------------------
+  // SUBJECT NEGLECT DETECTION
+  // ----------------------------------------------------------
+  const getNeglectedSubjects = () => {
+    const states = MPStorage.get('medpath_topic_states') || {};
+    const allTopics = window.MedPathData?.getAllTopics?.() || [];
+
+    const subjectMap = {};
+    allTopics.forEach(topic => {
+      if (!subjectMap[topic.subjectId]) {
+        subjectMap[topic.subjectId] = { total: 0, done: 0 };
+      }
+      subjectMap[topic.subjectId].total++;
+      if (states[topic.id]?.status === 'done') {
+        subjectMap[topic.subjectId].done++;
+      }
+    });
+
+    return Object.entries(subjectMap)
+      .filter(([_, data]) => data.total > 0 && (data.done / data.total) < 0.2)
+      .map(([subjectId, data]) => ({
+        subjectId,
+        percent: Math.round((data.done / data.total) * 100)
+      }));
+  };
+
+  // ----------------------------------------------------------
+  // SCAFFOLD: NOTIFICATION-TRIGGER
+  // Stores scheduled notifications in localStorage
+  // When real push service added, swap this implementation
+  // Permission already requested in onboarding
+  // ----------------------------------------------------------
+  const NotificationScaffold = {
+    scheduleLocal: (topicId, reviewTimestamp) => {
+      const scheduled = MPStorage.get('medpath_scheduled_notifs') || [];
+      const filtered = scheduled.filter(n => n.topicId !== topicId);
+      filtered.push({ topicId, scheduledFor: reviewTimestamp });
+      MPStorage.set('medpath_scheduled_notifs', filtered);
+      // SCAFFOLD: PUSH-READY
+      // When service worker added:
+      // navigator.serviceWorker.ready.then(sw => {
+      //   sw.showNotification('MedPath Revision Due', { body: topicName })
+      // })
+    },
+    getDueNotifications: () => {
+      const scheduled = MPStorage.get('medpath_scheduled_notifs') || [];
+      const now = Date.now();
+      return scheduled.filter(n => n.scheduledFor <= now);
+    }
+  };
+
+  // ----------------------------------------------------------
+  // SCAFFOLD: PRO-GATE
+  // All pro feature checks go through here
+  // When Razorpay added, flip the flags
+  // ----------------------------------------------------------
+  const PRO_FEATURES = {
+    smartPlanAI: false,       // Advanced AI recommendations
+    examMode: false,          // Full exam mode
+    exportPDF: false,         // PDF export
+    cloudSync: false,         // Cross-device sync
+    streakProtection: false,  // Streak freeze
+    integrationModules: false // Cross-subject modules
+  };
+
+  const isProFeature = (featureKey) => {
+    // SCAFFOLD: PAYMENT-CHECK
+    // When Razorpay added:
+    // const profile = MPStorage.get('medpath_profile')
+    // return profile?.isPro === true
+    return false; // All free during beta
+  };
+
+  // ----------------------------------------------------------
+  // SCAFFOLD: PAYMENT-SLOT
+  // When Razorpay integration added, call this
+  // ----------------------------------------------------------
+  const PaymentScaffold = {
+    initiatePurchase: (plan) => {
+      // SCAFFOLD: RAZORPAY-READY
+      // const options = {
+      //   key: 'rzp_live_XXXXXXX',
+      //   amount: plan === 'monthly' ? 9900 : 59900,
+      //   currency: 'INR',
+      //   name: 'MedPath Pro',
+      //   handler: (response) => {
+      //     const profile = MPStorage.get('medpath_profile')
+      //     profile.isPro = true
+      //     profile.proSince = Date.now()
+      //     MPStorage.set('medpath_profile', profile)
+      //   }
+      // }
+      // new Razorpay(options).open()
+      console.log('[MedPath] Payment scaffold ready. Razorpay not yet integrated.');
+    },
+    getProStatus: () => {
+      const profile = MPStorage.get('medpath_profile');
+      return profile?.isPro || false;
+    }
+  };
+
+  // ----------------------------------------------------------
+  // PUBLIC API
+  // ----------------------------------------------------------
+  return {
+    // Core actions
+    markTopicDone,
+    markTopicInProgress,
+    setConfidence,
+    saveNotes,
+
+    // Scoring
+    calculatePriority,
+    getPriorityBand,
+    getForgettingRisk,
+    forgettingRiskDisplay,
+
+    // Plans
+    generateSmartPlan,
+    generateStarterPlan,
+    getTodaysRevisions,
+    getOverdueRevisions,
+
+    // Streak
+    updateStreak,
+    getStreak,
+    getStreakEmoji,
+    isStreakAtRisk,
+
+    // Progress
+    getProgressSummary,
+    getNeglectedSubjects,
+
+    // SRS
+    getNextReviewDate,
+
+    // Scaffolds (accessible for future modules)
+    MPStorage,
+    NotificationScaffold,
+    PaymentScaffold,
+    isProFeature,
+    PRO_FEATURES
+  };
+
+})();
+
+// Make globally accessible
+window.RevisionEngine = RevisionEngine;
+window.MPStorage = RevisionEngine.MPStorage;
+
+// ============================================================
+// SESSION 7 — COMPLETE
+// Scaffolds included:
+//   SYNC-HOOK       → MPStorage abstraction layer
+//   AUTH-READY      → getUserId() pre-wired
+//   NOTIFICATION-TRIGGER → scheduleLocal() ready
+//   PRO-GATE        → isProFeature() + PRO_FEATURES flags
+//   PAYMENT-SLOT    → PaymentScaffold ready for Razorpay
+//   PUSH-READY      → Service worker comment hook
+// ============================================================
 // ============================================================
 // DASHBOARD
 // ============================================================
