@@ -926,14 +926,19 @@ p{font-size:var(--font-md);line-height:1.6;color:var(--text-secondary)}
           <span class="step-emoji">🎯</span>
           <div class="step-title">Daily topic goal</div>
           <div class="step-sub">How many topics do you want to cover each day?</div>
-          <div class="goal-grid">
-            <button class="goal-option" onclick="Onboarding.selectGoal(3)" id="goal-3">3</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(5)" id="goal-5">5</button>
-            <button class="goal-option selected" onclick="Onboarding.selectGoal(7)" id="goal-7">7</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(10)" id="goal-10">10</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(15)" id="goal-15">15</button>
+       <div class="goal-grid" style="grid-template-columns:1fr;max-width:280px;margin:0 auto;">
+            <input
+              class="input"
+              id="goal-custom"
+              type="number"
+              min="1"
+              max="50"
+              placeholder="Enter number of topics"
+              style="text-align:center;font-size:1.4rem;font-weight:700;letter-spacing:0.02em;"
+              oninput="Onboarding.selectGoal(parseInt(this.value)||0)"
+            />
           </div>
-          <div class="goal-sub">Recommended: 7 topics/day keeps you on track</div>
+          <div class="goal-sub">Your pace. Your choice. No pressure.</div>
           <div class="exam-date-label">Upcoming exam date (optional)</div>
           <input class="input" id="ob-exam-date" type="date" style="margin-bottom:8px;"/>
           <span class="skip-link" onclick="Onboarding.skipExamDate()">Skip for now</span>
