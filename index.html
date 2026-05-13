@@ -882,9 +882,10 @@ p{font-size:var(--font-md);line-height:1.6;color:var(--text-secondary)}
     <div class="onboarding-wrap">
       <div class="onboarding-header">
         <div class="onboarding-logo">🏥 MedPath</div>
-        <div class="onboarding-step-text" id="ob-step-text">Step 1 of 5</div>
+             <div class="onboarding-step-text" id="ob-step-text">Step 1 of 4</div>
+        <!-- MP-FIX-ONBOARD-V2 -->
       </div>
-      <div class="onboarding-progress"><div class="onboarding-progress-bar"><div class="onboarding-progress-fill" id="ob-progress-fill" style="width:20%;"></div></div></div>
+      <div class="onboarding-progress"><div class="onboarding-progress-bar"><div class="onboarding-progress-fill" id="ob-progress-fill" style="width:25%;"></div></div></div>
       <div class="onboarding-body">
         <div class="onboarding-step active" id="ob-step-1">
           <span class="step-emoji">👋</span>
@@ -923,22 +924,6 @@ p{font-size:var(--font-md);line-height:1.6;color:var(--text-secondary)}
             <button class="theme-option theme-option-dark selected" id="theme-dark" onclick="Onboarding.selectTheme('dark')"><div class="theme-preview">🌙</div><div class="theme-label">Dark</div><div class="theme-sub">Easy on eyes</div></button>
             <button class="theme-option theme-option-light" id="theme-light" onclick="Onboarding.selectTheme('light')"><div class="theme-preview">☀️</div><div class="theme-label">Light</div><div class="theme-sub">Classic look</div></button>
           </div>
-        </div>
-        <div class="onboarding-step" id="ob-step-5">
-          <span class="step-emoji">🎯</span>
-          <div class="step-title">Daily topic goal</div>
-          <div class="step-sub">How many topics do you want to cover each day?</div>
-          <div class="goal-grid">
-            <button class="goal-option" onclick="Onboarding.selectGoal(3)" id="goal-3">3</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(5)" id="goal-5">5</button>
-            <button class="goal-option selected" onclick="Onboarding.selectGoal(7)" id="goal-7">7</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(10)" id="goal-10">10</button>
-            <button class="goal-option" onclick="Onboarding.selectGoal(15)" id="goal-15">15</button>
-          </div>
-          <div class="goal-sub">Recommended: 7 topics/day keeps you on track</div>
-          <div class="exam-date-label">Upcoming exam date (optional)</div>
-          <input class="input" id="ob-exam-date" type="date" style="margin-bottom:8px;"/>
-          <span class="skip-link" onclick="Onboarding.skipExamDate()">Skip for now</span>
         </div>
       </div>
       <div class="onboarding-footer">
@@ -1735,18 +1720,17 @@ const Streak={
 // ONBOARDING
 // ============================================================
 const Onboarding={
-  step:1,data:{name:'',year:'',phase:'',college:'',theme:'dark',goal:7,examDate:''},selectedCollege:null,
+  step:1,data:{name:'',year:'',phase:'',college:'',theme:'dark',goal:null,examDate:''},selectedCollege:null,
   start(){
-    this.step=1;this.data={name:'',year:'',phase:'',college:'',theme:'dark',goal:7,examDate:''};this.selectedCollege=null;
+    this.step=1;this.data={name:'',year:'',phase:'',college:'',theme:'dark',goal:null,examDate:''};this.selectedCollege=null;
     this.updateProgress();this.renderColleges('');
-    document.getElementById('goal-7').classList.add('selected');
     Nav.go('onboarding');
   },
   updateProgress(){
-    document.getElementById('ob-progress-fill').style.width=(this.step/5*100)+'%';
-    document.getElementById('ob-step-text').textContent=`Step ${this.step} of 5`;
+    document.getElementById('ob-progress-fill').style.width=(this.step/4*100)+'%';
+    document.getElementById('ob-step-text').textContent=`Step ${this.step} of 4`;
     document.querySelectorAll('.onboarding-step').forEach((el,i)=>el.classList.toggle('active',i+1===this.step));
-    document.getElementById('ob-next-btn').textContent=this.step===5?'🎉 Start MedPath':'Continue →';
+    document.getElementById('ob-next-btn').textContent=this.step===4?'🎉 Start MedPath':'Continue →';
   },
   validateName(){
     const val=document.getElementById('ob-name-input').value.trim();
@@ -1780,12 +1764,7 @@ const Onboarding={
     document.getElementById('theme-dark').classList.toggle('selected',theme==='dark');
     document.getElementById('theme-light').classList.toggle('selected',theme==='light');
   },
-  selectGoal(n){
-    this.data.goal=n;
-    [3,5,7,10,15].forEach(v=>document.getElementById('goal-'+v).classList.toggle('selected',v===n));
-  },
-  skipExamDate(){this.data.examDate='';this.finish();},
-  next(){
+    next(){
     if(this.step===1){
       const name=document.getElementById('ob-name-input').value.trim();
       if(name.length<2){document.getElementById('ob-name-error').style.display='block';Toast.error('Please enter your name.');return;}
@@ -1793,7 +1772,7 @@ const Onboarding={
     }
     if(this.step===2&&!this.data.year){Toast.error('Please select your year.');return;}
     if(this.step===3&&!this.data.college){Toast.error('Please select your college.');return;}
-    if(this.step===5){this.data.examDate=document.getElementById('ob-exam-date')?.value||'';this.finish();return;}
+    if(this.step===4){this.finish();return;}
     this.step++;this.updateProgress();
   },
   finish(){
