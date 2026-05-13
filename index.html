@@ -1802,7 +1802,371 @@ const Onboarding={
 // INJECT-POINT: REVISION-ENGINE
 // Paste revision engine below this line (Session 7)
 // ============================================================
+// ============================================================
+// REVISION ENGINE — MP-S07-REVISION-ENGINE
+// The intelligence layer of MedPath
+// ============================================================
 
+const RevisionEngine = {
+
+  // ── CONSTANTS ──
+  INITIAL_INTERVAL: 3,
+  MIN_EASE: 1.3,
+  MAX_EASE: 2.5,
+  DEFAULT_EASE: 2.0,
+
+  // Tier multipliers for priority calculation
+  TIER_WEIGHTS: {
+    essential:  1.5,
+    pg:         1.2,
+    foundation: 1.0,
+    proff:      0.7
+  },
+
+  // NEET signal multipliers
+  SIGNAL_WEIGHTS: {
+    high:   1.3,
+    medium: 1.0,
+    low:    0.8
+  },
+
+  // ── CALCULATE NEXT INTERVAL ──
+  // Determines when a topic should next be reviewed
+  // Based on current interval, ease factor, and confidence
+  calculateNextInterval(currentInterval, easeFactor, confidence) {
+    let newInterval = currentInterval;
+    let newEase = easeFactor || this.DEFAULT_EASE;
+
+    if (confidence === 5) {
+      // Perfect recall — expand interval significantly
+      newEase = Math.min(newEase + 0.15, this.MAX_EASE);
+      newInterval = Math.round(currentInterval * newEase);
+    } else if (confidence === 4) {
+      // Good recall — standard expansion
+      newInterval = Math.round(currentInterval * newEase);
+    } else if (confidence === 3) {
+      // Hesitant — reduce ease, modest expansion
+      newEase = Math.max(newEase - 0.15, this.MIN_EASE);
+      newInterval = Math.round(currentInterval * newEase);
+    } else if (confidence === 2) {
+      // Difficult — push closer, reduce ease more
+      newEase = Math.max(newEase - 0.20, this.MIN_EASE);
+      newInterval = Math.max(Math.round(currentInterval * 0.5), 1);
+    } else if (confidence === 1) {
+      // Forgot — reset spacing, drop ease
+      newEase = Math.max(newEase - 0.30, this.MIN_EASE);
+      newInterval = 1;
+    } else {
+      // No confidence rating yet — use initial interval
+      newInterval = this.INITIAL_INTERVAL;
+    }
+
+    return { interval: newInterval, ease: newEase };
+  },
+
+  // ── CALCULATE DAYS UNTIL DUE ──
+  daysUntilDue(lastRevised, interval) {
+    if (!lastRevised) return 0;
+    const lastDate = new Date(lastRevised).getTime();
+    const dueDate = lastDate + (interval * 86400000);
+    const today = Date.now();
+    return Math.ceil((dueDate - today) / 86400000);
+  },
+
+  // ── CALCULATE FORGETTING RISK ──
+  // Returns: 'safe' | 'due_soon' | 'overdue' | 'critical'
+  calculateForgettingRisk(topicState) {
+    if (!topicState.lastRevised) {
+      // Never revised yet
+      if (topicState.firstStudied) {
+        const daysSinceStudy = Math.floor(
+          (Date.now() - new Date(topicState.firstStudied).getTime()) / 86400000
+        );
+        if (daysSinceStudy >= this.INITIAL_INTERVAL) {
+          return daysSinceStudy >= this.INITIAL_INTERVAL * 2 ? 'critical' : 'overdue';
+        }
+        return daysSinceStudy >= this.INITIAL_INTERVAL - 1 ? 'due_soon' : 'safe';
+      }
+      return 'safe';
+    }
+
+    const interval = topicState.currentInterval || this.INITIAL_INTERVAL;
+    const days = this.daysUntilDue(topicState.lastRevised, interval);
+
+    if (days < -interval) return 'critical';   // 2x past interval
+    if (days < 0)         return 'overdue';
+    if (days <= 2)        return 'due_soon';
+    return 'safe';
+  },
+
+  // ── CALCULATE TOPIC PRIORITY SCORE (0-99) ──
+  // The core intelligence — multi-factor scoring
+  calculatePriority(topic, topicState, userProfile) {
+    let score = 0;
+
+    // FACTOR 1: Year relevance
+    if (userProfile && topic.subjectId) {
+      const subject = MedPathData.getSubject(topic.subjectId);
+      if (subject && subject.year === userProfile.year) {
+        score += 30;
+      }
+    }
+
+    // FACTOR 2: Tier weight
+    const tierBonus = {
+      essential:  28,
+      pg:         20,
+      foundation: 15,
+      proff:      5
+    };
+    score += tierBonus[topic.tier] || 10;
+
+    // FACTOR 3: Status
+    if (topicState) {
+      if (topicState.status === 'in_progress') score += 20;
+      else if (topicState.status === 'not_started') score += 15;
+      else if (topicState.status === 'done') score += 5;
+    } else {
+      score += 15;
+    }
+
+    // FACTOR 4: Confidence (lower confidence = higher priority)
+    if (topicState && topicState.confidence > 0) {
+      const confBonus = { 1: 28, 2: 22, 3: 15, 4: 8, 5: 2 };
+      score += confBonus[topicState.confidence] || 0;
+    }
+
+    // FACTOR 5: Days since last study
+    if (topicState && topicState.lastRevised) {
+      const daysSince = Math.floor(
+        (Date.now() - new Date(topicState.lastRevised).getTime()) / 86400000
+      );
+      if (daysSince >= 30)      score += 28;
+      else if (daysSince >= 14) score += 20;
+      else if (daysSince >= 7)  score += 12;
+      else if (daysSince >= 3)  score += 5;
+    } else if (topicState && topicState.firstStudied) {
+      const daysSince = Math.floor(
+        (Date.now() - new Date(topicState.firstStudied).getTime()) / 86400000
+      );
+      if (daysSince >= 14)     score += 22;
+      else if (daysSince >= 7) score += 14;
+      else if (daysSince >= 3) score += 8;
+    }
+
+    // FACTOR 6: Subject neglect
+    if (topic.subjectId) {
+      const subjectStats = MedPathData.getSubjectStats(topic.subjectId);
+      if (subjectStats.total > 0) {
+        const completionPct = (subjectStats.done / subjectStats.total) * 100;
+        if (completionPct < 20) score += 8;
+      }
+    }
+
+    // FACTOR 7: NEET signal multiplier
+    const signalMult = this.SIGNAL_WEIGHTS[topic.neetSignal] || 1.0;
+    score = Math.round(score * signalMult);
+
+    // Cap at 99
+    return Math.min(score, 99);
+  },
+
+  // ── PRIORITY LEVEL LABEL ──
+  getPriorityLevel(score) {
+    if (score >= 75) return { label: 'High',   color: 'red',    css: 'priority-high' };
+    if (score >= 50) return { label: 'Medium', color: 'yellow', css: 'priority-med' };
+    return { label: 'Low', color: 'green', css: 'priority-low' };
+  },
+
+  // ── GENERATE TODAY'S REVISION QUEUE ──
+  // Returns topics that need revision today, sorted by priority
+  generateRevisionQueue(userProfile) {
+    const states = Storage.getTopicStates();
+    const queue = [];
+
+    MedPathData.topics.forEach(topic => {
+      const state = states[topic.id];
+
+      // Skip topics never started
+      if (!state || (!state.firstStudied && state.status === 'not_started')) {
+        return;
+      }
+
+      const risk = this.calculateForgettingRisk(state);
+
+      // Only include topics that need attention
+      if (risk === 'safe') return;
+
+      const priority = this.calculatePriority(topic, state, userProfile);
+      const interval = state.currentInterval || this.INITIAL_INTERVAL;
+      const daysUntil = this.daysUntilDue(state.lastRevised || state.firstStudied, interval);
+
+      queue.push({
+        topic,
+        state,
+        priority,
+        risk,
+        daysUntil,
+        priorityLevel: this.getPriorityLevel(priority)
+      });
+    });
+
+    // Sort by priority (highest first), then by risk severity
+    const riskOrder = { critical: 0, overdue: 1, due_soon: 2, safe: 3 };
+    queue.sort((a, b) => {
+      if (riskOrder[a.risk] !== riskOrder[b.risk]) {
+        return riskOrder[a.risk] - riskOrder[b.risk];
+      }
+      return b.priority - a.priority;
+    });
+
+    return queue;
+  },
+
+  // ── GENERATE SMART PLAN FOR NEW USERS ──
+  // Cold start: when user has no data yet
+  generateSmartPlanForNewUser(userProfile) {
+    const recommendations = [];
+
+    if (!userProfile || !userProfile.year) {
+      return recommendations;
+    }
+
+    // Get subjects relevant to user's year
+    const yearSubjects = MedPathData.subjects.filter(s => s.year === userProfile.year);
+
+    yearSubjects.forEach(subject => {
+      // Pick top 3 essential topics from this subject
+      const essentialTopics = MedPathData.getTopicsBySubject(subject.id)
+        .filter(t => t.tier === 'essential')
+        .slice(0, 3);
+
+      essentialTopics.forEach(topic => {
+        recommendations.push({
+          topic,
+          subject,
+          reason: 'Essential topic for ' + subject.name,
+          isStarter: true
+        });
+      });
+    });
+
+    // Limit to top 10 recommendations
+    return recommendations.slice(0, 10);
+  },
+
+  // ── GENERATE SMART PLAN FOR ACTIVE USERS ──
+  // For users with some data
+  generateSmartPlan(userProfile) {
+    const states = Storage.getTopicStates();
+    const hasData = Object.keys(states).length > 0;
+
+    if (!hasData) {
+      return {
+        type: 'cold_start',
+        items: this.generateSmartPlanForNewUser(userProfile)
+      };
+    }
+
+    const queue = this.generateRevisionQueue(userProfile);
+    const dueToday = queue.filter(q => q.risk !== 'safe');
+
+    if (dueToday.length === 0) {
+      // No revisions due — recommend new topics
+      const newTopics = this.recommendNextTopics(userProfile);
+      return {
+        type: 'new_topics',
+        items: newTopics
+      };
+    }
+
+    return {
+      type: 'revision',
+      items: dueToday.slice(0, 7)  // Top 7 priority items
+    };
+  },
+
+  // ── RECOMMEND NEXT TOPICS TO STUDY ──
+  recommendNextTopics(userProfile) {
+    if (!userProfile || !userProfile.year) return [];
+
+    const states = Storage.getTopicStates();
+    const yearSubjects = MedPathData.subjects.filter(s => s.year === userProfile.year);
+    const recommendations = [];
+
+    yearSubjects.forEach(subject => {
+      const topics = MedPathData.getTopicsBySubject(subject.id)
+        .filter(t => {
+          const state = states[t.id];
+          return !state || state.status === 'not_started';
+        })
+        .filter(t => t.tier === 'essential' || t.tier === 'pg')
+        .slice(0, 3);
+
+      topics.forEach(topic => {
+        recommendations.push({
+          topic,
+          subject,
+          reason: topic.tier === 'essential' ? 'High-yield essential' : 'PG-important'
+        });
+      });
+    });
+
+    return recommendations.slice(0, 7);
+  },
+
+  // ── UPDATE TOPIC STATE AFTER REVISION ──
+  // Called when user marks a topic as revised with confidence
+  updateAfterRevision(topicId, confidence) {
+    const state = Storage.getTopicState(topicId);
+    const currentInterval = state.currentInterval || this.INITIAL_INTERVAL;
+    const currentEase = state.easeFactor || this.DEFAULT_EASE;
+
+    const result = this.calculateNextInterval(currentInterval, currentEase, confidence);
+
+    const today = TimeUtil.today();
+    state.lastRevised = today;
+    state.currentInterval = result.interval;
+    state.easeFactor = result.ease;
+    state.confidence = confidence;
+    state.revisionCount = (state.revisionCount || 0) + 1;
+    state.forgettingRisk = 'safe';
+
+    Storage.saveTopicState(topicId, state);
+    return state;
+  },
+
+  // ── MARK TOPIC AS FIRST STUDIED ──
+  markFirstStudy(topicId) {
+    const state = Storage.getTopicState(topicId);
+    if (!state.firstStudied) {
+      state.firstStudied = TimeUtil.today();
+      state.status = 'in_progress';
+      state.currentInterval = this.INITIAL_INTERVAL;
+      state.easeFactor = this.DEFAULT_EASE;
+      Storage.saveTopicState(topicId, state);
+    }
+    return state;
+  },
+
+  // ── GET STATS FOR DASHBOARD ──
+  getRevisionStats(userProfile) {
+    const queue = this.generateRevisionQueue(userProfile);
+    return {
+      totalDue:     queue.length,
+      critical:     queue.filter(q => q.risk === 'critical').length,
+      overdue:      queue.filter(q => q.risk === 'overdue').length,
+      dueSoon:      queue.filter(q => q.risk === 'due_soon').length,
+      highPriority: queue.filter(q => q.priority >= 75).length
+    };
+  }
+
+};
+
+// ============================================================
+// INJECT-POINT: REVISION-ENGINE-EXTENSIONS
+// Future: Pro tier features hook here
+// ============================================================
 // ============================================================
 // DASHBOARD
 // ============================================================
