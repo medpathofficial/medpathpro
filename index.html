@@ -2472,8 +2472,16 @@ const Dashboard={
   }
 };
 
-// Initialize the new dashboard
-DashboardV2.init();
+// Initialize the new dashboard — MP-FIX-S08-INIT
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (typeof DashboardV2 !== 'undefined' && DashboardV2.init) {
+      DashboardV2.init();
+    }
+  } catch(e) {
+    console.error('Dashboard init error:', e);
+  }
+});
 
 // ============================================================
 // INJECT-POINT: DASHBOARD-EXTENSIONS
@@ -2553,11 +2561,19 @@ const SettingsGoal = {
 };
 
 // Hook into ProfilePage.render to inject goal section
-const _originalProfileRender = ProfilePage.render.bind(ProfilePage);
-ProfilePage.render = function() {
-  _originalProfileRender();
-  setTimeout(() => SettingsGoal.inject(), 50);
-};
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (typeof ProfilePage !== 'undefined' && ProfilePage.render) {
+      const _originalProfileRender = ProfilePage.render.bind(ProfilePage);
+      ProfilePage.render = function() {
+        _originalProfileRender();
+        setTimeout(() => SettingsGoal.inject(), 50);
+      };
+    }
+  } catch(e) {
+    console.error('Settings hook error:', e);
+  }
+});
 
 // ============================================================
 // INJECT-POINT: SETTINGS-EXTENSIONS
