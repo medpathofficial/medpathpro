@@ -2647,29 +2647,36 @@ const Subjects={
 // SUBJECTS V2 — MP-S09-SUBJECTS-EXPANDABLE
 // Expandable subjects with chapter and topic interaction
 // ============================================================
+// SUBJECTS V3 — MP-FIX-SUBJECTS-V3
+// Section tabs + smooth expand + scroll-to-result
+// ============================================================
 
 const SubjectsV2 = {
 
   expandedSubject: null,
+  expandedSection: {},
   expandedChapters: {},
   activeFilter: 'all',
+  searchQuery: '',
 
   // ── INJECT STYLES ──
   injectStyles() {
-    if (document.getElementById('subjects-v2-styles')) return;
+    if (document.getElementById('subjects-v3-styles')) return;
     const style = document.createElement('style');
-    style.id = 'subjects-v2-styles';
+    style.id = 'subjects-v3-styles';
     style.textContent = `
-      .sv2-filter-row { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+      .sv2-filter-row { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
       .sv2-filter-row::-webkit-scrollbar { display: none; }
-      .sv2-filter-pill { padding: 8px 16px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit; }
+      .sv2-filter-pill { padding: 8px 16px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit; }
       .sv2-filter-pill.active { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; border-color: var(--gold); }
       .sv2-filter-pill:active { transform: scale(0.95); }
       .sv2-phase-header { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 4px; margin: 24px 0 12px; }
       .sv2-phase-header:first-child { margin-top: 0; }
-      .sv2-subject-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; transition: all 0.25s; }
-      .sv2-subject-card.expanded { border-color: var(--gold); box-shadow: 0 4px 20px rgba(245,158,11,0.08); }
-      .sv2-subject-header { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; transition: background 0.2s; }
+      .sv2-subject-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+      .sv2-subject-card.expanded { border-color: var(--gold); box-shadow: 0 4px 24px rgba(245,158,11,0.10); }
+      .sv2-subject-card.highlight { animation: sv2-highlight 1.2s ease; }
+      @keyframes sv2-highlight { 0%, 100% { box-shadow: 0 4px 24px rgba(245,158,11,0.10); } 50% { box-shadow: 0 4px 36px rgba(245,158,11,0.40); } }
+      .sv2-subject-header { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; transition: background 0.15s; }
       .sv2-subject-header:active { background: rgba(255,255,255,0.03); }
       [data-theme="light"] .sv2-subject-header:active { background: rgba(0,0,0,0.03); }
       .sv2-subject-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
@@ -2679,15 +2686,25 @@ const SubjectsV2 = {
       .sv2-subject-right { text-align: right; flex-shrink: 0; }
       .sv2-subject-pct { font-size: 17px; font-weight: 800; line-height: 1; }
       .sv2-subject-count { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
-      .sv2-subject-arrow { color: var(--text-tertiary); font-size: 14px; margin-left: 8px; transition: transform 0.25s; }
+      .sv2-subject-arrow { color: var(--text-tertiary); font-size: 14px; margin-left: 8px; transition: transform 0.25s ease; }
       .sv2-subject-card.expanded .sv2-subject-arrow { transform: rotate(90deg); color: var(--gold); }
       .sv2-subject-progress { padding: 0 16px 12px; }
       .sv2-tier-row { padding: 0 16px 14px; display: flex; gap: 6px; flex-wrap: wrap; }
       .sv2-tier-mini { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
-      .sv2-chapters-wrap { padding: 4px 0 12px; background: rgba(0,0,0,0.15); border-top: 1px solid var(--border); animation: sv2-expand 0.3s ease; }
-      [data-theme="light"] .sv2-chapters-wrap { background: rgba(0,0,0,0.02); }
-      @keyframes sv2-expand { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 5000px; } }
-      .sv2-chapter { padding: 12px 16px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border); }
+      .sv2-expanded-body { border-top: 1px solid var(--border); background: rgba(0,0,0,0.20); overflow: hidden; }
+      [data-theme="light"] .sv2-expanded-body { background: rgba(0,0,0,0.02); }
+      .sv2-section-tabs { display: flex; gap: 6px; padding: 12px 12px 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .sv2-section-tabs::-webkit-scrollbar { display: none; }
+      .sv2-section-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 12px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; min-width: 56px; font-family: inherit; }
+      .sv2-section-tab.active { background: var(--gold); border-color: var(--gold); }
+      .sv2-section-tab.active .sv2-tab-letter,
+      .sv2-section-tab.active .sv2-tab-label { color: #000; }
+      .sv2-section-tab:active { transform: scale(0.94); }
+      .sv2-tab-letter { font-size: 14px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.5px; }
+      .sv2-tab-label { font-size: 9px; color: var(--text-tertiary); font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap; }
+      .sv2-section-content { padding: 8px 0 12px; }
+      .sv2-section-title { font-size: 10px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 1.5px; padding: 8px 16px 6px; text-transform: uppercase; }
+      .sv2-chapter { padding: 12px 16px; cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border); }
       .sv2-chapter:last-child { border-bottom: none; }
       .sv2-chapter:active { background: rgba(255,255,255,0.04); }
       [data-theme="light"] .sv2-chapter:active { background: rgba(0,0,0,0.04); }
@@ -2699,8 +2716,8 @@ const SubjectsV2 = {
       .sv2-chapter-stats { font-size: 11px; font-weight: 600; color: var(--gold); flex-shrink: 0; }
       .sv2-chapter-arrow { color: var(--text-tertiary); font-size: 12px; transition: transform 0.2s; }
       .sv2-chapter.expanded .sv2-chapter-arrow { transform: rotate(90deg); color: var(--gold); }
-      .sv2-topics-wrap { padding: 8px 0 4px; margin-top: 10px; border-top: 1px dashed var(--border); animation: sv2-expand 0.3s ease; }
-      .sv2-topic-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 32px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+      .sv2-topics-wrap { padding: 6px 0 4px; margin-top: 10px; border-top: 1px dashed var(--border); }
+      .sv2-topic-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px 9px 32px; border-radius: 8px; cursor: pointer; transition: background 0.12s; }
       .sv2-topic-item:active { background: rgba(255,255,255,0.05); }
       [data-theme="light"] .sv2-topic-item:active { background: rgba(0,0,0,0.05); }
       .sv2-topic-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-tertiary); flex-shrink: 0; }
@@ -2710,8 +2727,8 @@ const SubjectsV2 = {
       .sv2-topic-name { font-size: 12px; font-weight: 500; color: var(--text-primary); line-height: 1.4; }
       .sv2-topic-meta { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
       .sv2-topic-tier { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 999px; letter-spacing: 0.3px; text-transform: uppercase; flex-shrink: 0; }
-      .sv2-topic-conf { display: flex; gap: 2px; flex-shrink: 0; }
-      .sv2-conf-star { font-size: 10px; color: var(--text-tertiary); }
+      .sv2-topic-conf { display: flex; gap: 1px; flex-shrink: 0; }
+      .sv2-conf-star { font-size: 9px; color: var(--text-tertiary); }
       .sv2-conf-star.filled { color: var(--gold); }
       .sv2-empty-chapters { padding: 24px; text-align: center; font-size: 12px; color: var(--text-tertiary); }
       .sv2-search-wrap { position: relative; margin-bottom: 16px; }
@@ -2719,72 +2736,91 @@ const SubjectsV2 = {
       .sv2-search-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px 12px 38px; font-size: 14px; color: var(--text-primary); font-family: inherit; outline: none; transition: border-color 0.2s; }
       .sv2-search-input:focus { border-color: var(--gold); }
       .sv2-search-input::placeholder { color: var(--text-tertiary); }
+      .sv2-search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--bg-elevated); border: none; color: var(--text-secondary); padding: 4px 10px; border-radius: 999px; cursor: pointer; font-size: 11px; font-family: inherit; }
     `;
     document.head.appendChild(style);
   },
 
-  // ── RENDER MAIN VIEW ──
+  // ── SECTION DEFINITIONS ──
+  getSections(subjectId) {
+    if (subjectId === 'anatomy') {
+      return [
+        { id: 'A', label: 'General' },
+        { id: 'B', label: 'Upper' },
+        { id: 'C', label: 'Thorax' },
+        { id: 'D', label: 'Abdomen' },
+        { id: 'E', label: 'Pelvis' },
+        { id: 'F', label: 'Lower' },
+        { id: 'G', label: 'H&N' },
+        { id: 'H', label: 'Neuro' },
+        { id: 'I', label: 'Embryo' }
+      ];
+    }
+    return null; // Other subjects don't need section tabs
+  },
+
+  // ── RENDER MAIN ──
   render() {
     this.injectStyles();
-    const container = document.getElementById('subjects-list');
-    if (!container) return;
-
-    const profile = Storage.getProfile();
-    const userYear = profile?.year || 'all';
-
-    // Wrap the list in container with filter
     const wrap = document.querySelector('#page-subjects .subjects-wrap');
-    if (wrap && !document.getElementById('sv2-filter-row')) {
-      const filterHTML = `
-        <div class="sv2-search-wrap">
-          <span class="sv2-search-icon">🔍</span>
-          <input class="sv2-search-input" id="sv2-search" type="text" placeholder="Search subjects, chapters, topics..." oninput="SubjectsV2.handleSearch()"/>
-        </div>
-        <div class="sv2-filter-row" id="sv2-filter-row">
-          <button class="sv2-filter-pill ${this.activeFilter==='all'?'active':''}" onclick="SubjectsV2.setFilter('all')">All</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='my-year'?'active':''}" onclick="SubjectsV2.setFilter('my-year')">My Year</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='1'?'active':''}" onclick="SubjectsV2.setFilter('1')">Phase I</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='2'?'active':''}" onclick="SubjectsV2.setFilter('2')">Phase II</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='3a'?'active':''}" onclick="SubjectsV2.setFilter('3a')">Phase III-I</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='3b'?'active':''}" onclick="SubjectsV2.setFilter('3b')">Phase III-II</button>
-          <button class="sv2-filter-pill ${this.activeFilter==='in-progress'?'active':''}" onclick="SubjectsV2.setFilter('in-progress')">In Progress</button>
-        </div>
-      `;
+    if (!wrap) return;
+
+    // Inject search + filter UI once
+    if (!document.getElementById('sv2-filter-row')) {
       const pageSub = wrap.querySelector('.page-sub');
       if (pageSub) {
-        pageSub.insertAdjacentHTML('afterend', filterHTML);
+        pageSub.insertAdjacentHTML('afterend', `
+          <div class="sv2-search-wrap">
+            <span class="sv2-search-icon">🔍</span>
+            <input class="sv2-search-input" id="sv2-search" type="text" placeholder="Search subjects, chapters, topics..." oninput="SubjectsV2.handleSearch()"/>
+          </div>
+          <div class="sv2-filter-row" id="sv2-filter-row"></div>
+        `);
       }
     }
 
-    this.renderSubjectsList(userYear);
+    this.renderFilters();
+    this.renderSubjectsList();
   },
 
-  // ── RENDER FILTERED SUBJECTS ──
-  renderSubjectsList(userYear) {
+  renderFilters() {
+    const row = document.getElementById('sv2-filter-row');
+    if (!row) return;
+    const filters = [
+      { id: 'all', label: 'All' },
+      { id: 'my-year', label: 'My Year' },
+      { id: '1', label: 'Phase I' },
+      { id: '2', label: 'Phase II' },
+      { id: '3a', label: 'Phase III-I' },
+      { id: '3b', label: 'Phase III-II' },
+      { id: 'in-progress', label: 'In Progress' }
+    ];
+    row.innerHTML = filters.map(f => `
+      <button class="sv2-filter-pill ${this.activeFilter === f.id ? 'active' : ''}" onclick="SubjectsV2.setFilter('${f.id}')">${f.label}</button>
+    `).join('');
+  },
+
+  renderSubjectsList() {
     const container = document.getElementById('subjects-list');
     if (!container) return;
+    if (this.searchQuery) { this.renderSearchResults(); return; }
 
+    const profile = Storage.getProfile();
+    const userYear = profile?.year || 'all';
     let subjects = MedPathData.subjects;
 
-    // Apply filter
-    if (this.activeFilter === 'my-year') {
-      subjects = subjects.filter(s => s.year === userYear);
-    } else if (this.activeFilter === '1') {
-      subjects = subjects.filter(s => s.phase === '1');
-    } else if (this.activeFilter === '2') {
-      subjects = subjects.filter(s => s.phase === '2');
-    } else if (this.activeFilter === '3a') {
-      subjects = subjects.filter(s => s.phase === '3a');
-    } else if (this.activeFilter === '3b') {
-      subjects = subjects.filter(s => s.phase === '3b');
-    } else if (this.activeFilter === 'in-progress') {
+    if (this.activeFilter === 'my-year') subjects = subjects.filter(s => s.year === userYear);
+    else if (this.activeFilter === '1') subjects = subjects.filter(s => s.phase === '1');
+    else if (this.activeFilter === '2') subjects = subjects.filter(s => s.phase === '2');
+    else if (this.activeFilter === '3a') subjects = subjects.filter(s => s.phase === '3a');
+    else if (this.activeFilter === '3b') subjects = subjects.filter(s => s.phase === '3b');
+    else if (this.activeFilter === 'in-progress') {
       subjects = subjects.filter(s => {
-        const stats = MedPathData.getSubjectStats(s.id);
-        return stats.inProgress > 0 || stats.done > 0;
+        const st = MedPathData.getSubjectStats(s.id);
+        return st.inProgress > 0 || st.done > 0;
       });
     }
 
-    // Group by phase if showing all
     let html = '';
     if (this.activeFilter === 'all') {
       const phases = [
@@ -2794,23 +2830,20 @@ const SubjectsV2 = {
         { label: 'Phase III Part II — Clinical', phase: '3b' }
       ];
       phases.forEach(ph => {
-        const phaseSubjects = subjects.filter(s => s.phase === ph.phase);
-        if (phaseSubjects.length === 0) return;
+        const phs = subjects.filter(s => s.phase === ph.phase);
+        if (phs.length === 0) return;
         html += `<div class="sv2-phase-header">${ph.label}</div>`;
-        phaseSubjects.forEach(s => { html += this.renderSubjectCard(s); });
+        phs.forEach(s => { html += this.renderSubjectCard(s); });
       });
+    } else if (subjects.length === 0) {
+      html = `<div class="sv2-empty-chapters" style="padding:40px 20px;">No subjects match this filter.</div>`;
     } else {
-      if (subjects.length === 0) {
-        html = `<div class="sv2-empty-chapters" style="padding:40px 20px;">No subjects match this filter.</div>`;
-      } else {
-        subjects.forEach(s => { html += this.renderSubjectCard(s); });
-      }
+      subjects.forEach(s => { html += this.renderSubjectCard(s); });
     }
 
     container.innerHTML = html;
   },
 
-  // ── RENDER ONE SUBJECT CARD ──
   renderSubjectCard(subject) {
     const stats = MedPathData.getSubjectStats(subject.id);
     const pct = stats.total > 0 ? Math.round(stats.done / stats.total * 100) : 0;
@@ -2835,83 +2868,91 @@ const SubjectsV2 = {
           <div class="sv2-subject-arrow">▶</div>
         </div>
         ${hasData ? `
-          <div class="sv2-subject-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${subject.color};"></div></div>
-          </div>
+          <div class="sv2-subject-progress"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${subject.color};"></div></div></div>
           <div class="sv2-tier-row">
             ${essential > 0 ? `<span class="sv2-tier-mini badge-essential">🔴 ${essential} Essential</span>` : ''}
             ${pg > 0 ? `<span class="sv2-tier-mini badge-pg">🟡 ${pg} PG</span>` : ''}
             ${foundation > 0 ? `<span class="sv2-tier-mini badge-foundation">🔵 ${foundation} Foundation</span>` : ''}
           </div>
         ` : `<div style="padding:0 16px 14px;font-size:11px;color:var(--text-tertiary);">Data coming in future sessions</div>`}
-        ${isExpanded && hasData ? this.renderChapters(subject.id) : ''}
+        <div class="sv2-expanded-body" id="exp-${subject.id}" style="display:${isExpanded && hasData ? 'block' : 'none'};">
+          ${isExpanded && hasData ? this.renderExpandedBody(subject.id) : ''}
+        </div>
       </div>
     `;
   },
 
-  // ── RENDER CHAPTERS INSIDE SUBJECT ──
-  renderChapters(subjectId) {
-    const chapters = MedPathData.getChaptersBySubject(subjectId);
-    if (chapters.length === 0) {
-      return `<div class="sv2-chapters-wrap"><div class="sv2-empty-chapters">No chapters available yet.</div></div>`;
-    }
+  renderExpandedBody(subjectId) {
+    const sections = this.getSections(subjectId);
+    if (sections) return this.renderSectionedView(subjectId, sections);
+    return this.renderChapters(subjectId, null);
+  },
+
+  renderSectionedView(subjectId, sections) {
+    const activeSection = this.expandedSection[subjectId] || sections[0].id;
+    let html = '<div class="sv2-section-tabs">';
+    sections.forEach(sec => {
+      html += `
+        <button class="sv2-section-tab ${activeSection === sec.id ? 'active' : ''}" onclick="SubjectsV2.setSection('${subjectId}','${sec.id}',event)">
+          <div class="sv2-tab-letter">${sec.id}</div>
+          <div class="sv2-tab-label">${sec.label}</div>
+        </button>
+      `;
+    });
+    html += '</div>';
+    html += `<div class="sv2-section-content">${this.renderChapters(subjectId, activeSection)}</div>`;
+    return html;
+  },
+
+  renderChapters(subjectId, sectionFilter) {
+    let chapters = MedPathData.getChaptersBySubject(subjectId);
+    if (sectionFilter) chapters = chapters.filter(c => c.section === sectionFilter);
+    if (chapters.length === 0) return `<div class="sv2-empty-chapters">No chapters in this section.</div>`;
 
     const states = Storage.getTopicStates();
-    let html = '<div class="sv2-chapters-wrap">';
-
+    let html = '';
     chapters.forEach((chapter, idx) => {
       const topics = MedPathData.getTopicsByChapter(chapter.id);
-      let chapterDone = 0;
-      topics.forEach(t => {
-        if (states[t.id]?.status === 'done') chapterDone++;
-      });
-      const isChapterExpanded = this.expandedChapters[chapter.id];
+      let done = 0;
+      topics.forEach(t => { if (states[t.id]?.status === 'done') done++; });
+      const isExp = this.expandedChapters[chapter.id];
 
       html += `
-        <div class="sv2-chapter ${isChapterExpanded ? 'expanded' : ''}">
-          <div class="sv2-chapter-row" onclick="SubjectsV2.toggleChapter('${chapter.id}', event)">
+        <div class="sv2-chapter ${isExp ? 'expanded' : ''}" id="chap-${chapter.id}">
+          <div class="sv2-chapter-row" onclick="SubjectsV2.toggleChapter('${chapter.id}',event)">
             <div class="sv2-chapter-num">${String(idx + 1).padStart(2, '0')}</div>
             <div class="sv2-chapter-info">
               <div class="sv2-chapter-name">${chapter.name}</div>
               <div class="sv2-chapter-meta">${chapter.nmcCode || ''} · ${topics.length} topics</div>
             </div>
-            <div class="sv2-chapter-stats">${chapterDone}/${topics.length}</div>
+            <div class="sv2-chapter-stats">${done}/${topics.length}</div>
             <div class="sv2-chapter-arrow">▶</div>
           </div>
-          ${isChapterExpanded ? this.renderTopics(topics, states) : ''}
+          ${isExp ? this.renderTopics(topics, states) : ''}
         </div>
       `;
     });
-
-    html += '</div>';
     return html;
   },
 
-  // ── RENDER TOPICS INSIDE CHAPTER ──
   renderTopics(topics, states) {
-    if (topics.length === 0) {
-      return `<div class="sv2-topics-wrap"><div class="sv2-empty-chapters" style="padding:12px;">No topics yet.</div></div>`;
-    }
-
+    if (topics.length === 0) return `<div class="sv2-topics-wrap"><div class="sv2-empty-chapters" style="padding:12px;">No topics yet.</div></div>`;
     let html = '<div class="sv2-topics-wrap">';
     topics.forEach(topic => {
       const state = states[topic.id] || {};
       const dotClass = state.status === 'done' ? 'done' : (state.status === 'in_progress' ? 'in-progress' : '');
       const tierClass = `badge-${topic.tier}`;
-      const tierLabel = topic.tier.toUpperCase();
+      const tierLabel = topic.tier.toUpperCase().charAt(0);
       const conf = state.confidence || 0;
-
       html += `
         <div class="sv2-topic-item" onclick="SubjectsV2.openTopic('${topic.id}')">
           <div class="sv2-topic-dot ${dotClass}"></div>
           <div class="sv2-topic-text">
             <div class="sv2-topic-name">${topic.name}</div>
-            <div class="sv2-topic-meta">${topic.nmcCode || ''} ${topic.neetSignal === 'high' ? '· ⭐ High yield' : ''}</div>
+            <div class="sv2-topic-meta">${topic.nmcCode || ''} ${topic.neetSignal === 'high' ? '· ⭐' : ''}</div>
           </div>
-          <div class="sv2-topic-conf">
-            ${[1,2,3,4,5].map(n => `<span class="sv2-conf-star ${n <= conf ? 'filled' : ''}">★</span>`).join('')}
-          </div>
-          <span class="sv2-topic-tier ${tierClass}">${tierLabel.charAt(0)}</span>
+          <div class="sv2-topic-conf">${[1,2,3,4,5].map(n => `<span class="sv2-conf-star ${n <= conf ? 'filled' : ''}">★</span>`).join('')}</div>
+          <span class="sv2-topic-tier ${tierClass}">${tierLabel}</span>
         </div>
       `;
     });
@@ -2919,66 +2960,94 @@ const SubjectsV2 = {
     return html;
   },
 
-  // ── INTERACTIONS ──
+  // ── SMOOTH INTERACTIONS (NO FULL RE-RENDER) ──
   toggleSubject(subjectId) {
-    if (this.expandedSubject === subjectId) {
-      this.expandedSubject = null;
-      this.expandedChapters = {};
-    } else {
-      this.expandedSubject = subjectId;
+    const card = document.querySelector(`.sv2-subject-card[data-subject="${subjectId}"]`);
+    if (!card) return;
+
+    // Collapse currently expanded if different
+    if (this.expandedSubject && this.expandedSubject !== subjectId) {
+      const prev = document.querySelector(`.sv2-subject-card[data-subject="${this.expandedSubject}"]`);
+      if (prev) {
+        prev.classList.remove('expanded');
+        const prevBody = document.getElementById(`exp-${this.expandedSubject}`);
+        if (prevBody) { prevBody.style.display = 'none'; prevBody.innerHTML = ''; }
+      }
       this.expandedChapters = {};
     }
-    const profile = Storage.getProfile();
-    this.renderSubjectsList(profile?.year || 'all');
+
+    if (this.expandedSubject === subjectId) {
+      // Collapse
+      this.expandedSubject = null;
+      this.expandedChapters = {};
+      card.classList.remove('expanded');
+      const body = document.getElementById(`exp-${subjectId}`);
+      if (body) { body.style.display = 'none'; body.innerHTML = ''; }
+    } else {
+      // Expand
+      this.expandedSubject = subjectId;
+      card.classList.add('expanded');
+      const body = document.getElementById(`exp-${subjectId}`);
+      const stats = MedPathData.getSubjectStats(subjectId);
+      if (body && stats.total > 0) {
+        body.innerHTML = this.renderExpandedBody(subjectId);
+        body.style.display = 'block';
+      }
+    }
+  },
+
+  setSection(subjectId, sectionId, event) {
+    if (event) event.stopPropagation();
+    this.expandedSection[subjectId] = sectionId;
+    this.expandedChapters = {};
+    const body = document.getElementById(`exp-${subjectId}`);
+    if (body) body.innerHTML = this.renderExpandedBody(subjectId);
   },
 
   toggleChapter(chapterId, event) {
-    if (event) { event.stopPropagation(); }
+    if (event) event.stopPropagation();
     this.expandedChapters[chapterId] = !this.expandedChapters[chapterId];
-    const profile = Storage.getProfile();
-    this.renderSubjectsList(profile?.year || 'all');
+    // Surgical update — only re-render the parent subject's body
+    const subjectId = this.expandedSubject;
+    if (!subjectId) return;
+    const body = document.getElementById(`exp-${subjectId}`);
+    if (body) body.innerHTML = this.renderExpandedBody(subjectId);
   },
 
   setFilter(filter) {
     this.activeFilter = filter;
     this.expandedSubject = null;
     this.expandedChapters = {};
-    // Update pill states
-    document.querySelectorAll('.sv2-filter-pill').forEach(p => p.classList.remove('active'));
-    event.target.classList.add('active');
-    const profile = Storage.getProfile();
-    this.renderSubjectsList(profile?.year || 'all');
+    this.renderFilters();
+    this.renderSubjectsList();
   },
 
   handleSearch() {
-    const query = document.getElementById('sv2-search')?.value.toLowerCase().trim();
-    if (!query) {
-      const profile = Storage.getProfile();
-      this.renderSubjectsList(profile?.year || 'all');
-      return;
-    }
+    const input = document.getElementById('sv2-search');
+    this.searchQuery = input ? input.value.toLowerCase().trim() : '';
+    this.renderSubjectsList();
+  },
 
+  renderSearchResults() {
     const container = document.getElementById('subjects-list');
     if (!container) return;
-
-    const matchedSubjects = MedPathData.subjects.filter(s => s.name.toLowerCase().includes(query));
-    const matchedChapters = MedPathData.chapters.filter(c => c.name.toLowerCase().includes(query));
-    const matchedTopics = MedPathData.topics.filter(t => t.name.toLowerCase().includes(query));
+    const q = this.searchQuery;
+    const matchedSubjects = MedPathData.subjects.filter(s => s.name.toLowerCase().includes(q));
+    const matchedChapters = MedPathData.chapters.filter(c => c.name.toLowerCase().includes(q));
+    const matchedTopics = MedPathData.topics.filter(t => t.name.toLowerCase().includes(q));
 
     let html = '';
-
     if (matchedSubjects.length > 0) {
       html += `<div class="sv2-phase-header">Subjects (${matchedSubjects.length})</div>`;
       matchedSubjects.forEach(s => { html += this.renderSubjectCard(s); });
     }
-
     if (matchedChapters.length > 0) {
       html += `<div class="sv2-phase-header">Chapters (${matchedChapters.length})</div>`;
       matchedChapters.slice(0, 20).forEach(c => {
         const subject = MedPathData.getSubject(c.subjectId);
         html += `
-          <div class="sv2-subject-card">
-            <div class="sv2-subject-header" onclick="SubjectsV2.expandToChapter('${c.subjectId}', '${c.id}')">
+          <div class="sv2-subject-card" data-jump-chapter="${c.id}" data-jump-subject="${c.subjectId}">
+            <div class="sv2-subject-header" onclick="SubjectsV2.jumpToChapter('${c.subjectId}','${c.id}')">
               <div class="sv2-subject-icon" style="background:${subject.color}22;border:1px solid ${subject.color}44;">${subject.emoji}</div>
               <div class="sv2-subject-info">
                 <div class="sv2-subject-name" style="font-size:13px;">${c.name}</div>
@@ -2990,7 +3059,6 @@ const SubjectsV2 = {
         `;
       });
     }
-
     if (matchedTopics.length > 0) {
       html += `<div class="sv2-phase-header">Topics (${matchedTopics.length})</div>`;
       matchedTopics.slice(0, 30).forEach(t => {
@@ -2998,7 +3066,7 @@ const SubjectsV2 = {
         const tierClass = `badge-${t.tier}`;
         html += `
           <div class="sv2-subject-card">
-            <div class="sv2-subject-header" onclick="SubjectsV2.openTopic('${t.id}')">
+            <div class="sv2-subject-header" onclick="SubjectsV2.jumpToTopic('${t.subjectId}','${t.chapterId}','${t.id}')">
               <div class="sv2-subject-icon" style="background:${subject.color}22;border:1px solid ${subject.color}44;font-size:14px;">${subject.emoji}</div>
               <div class="sv2-subject-info">
                 <div class="sv2-subject-name" style="font-size:13px;">${t.name}</div>
@@ -3010,28 +3078,62 @@ const SubjectsV2 = {
         `;
       });
     }
-
-    if (html === '') {
-      html = `<div class="sv2-empty-chapters" style="padding:60px 20px;">No results for "${query}"</div>`;
-    }
-
+    if (html === '') html = `<div class="sv2-empty-chapters" style="padding:60px 20px;">No results for "${q}"</div>`;
     container.innerHTML = html;
   },
 
-  expandToChapter(subjectId, chapterId) {
+  // ── JUMP FROM SEARCH RESULT ──
+  jumpToChapter(subjectId, chapterId) {
+    // Find which section this chapter belongs to
+    const chapter = MedPathData.chapters.find(c => c.id === chapterId);
+    if (chapter && chapter.section) {
+      this.expandedSection[subjectId] = chapter.section;
+    }
     this.expandedSubject = subjectId;
     this.expandedChapters = { [chapterId]: true };
-    document.getElementById('sv2-search').value = '';
-    const profile = Storage.getProfile();
-    this.renderSubjectsList(profile?.year || 'all');
+    this.searchQuery = '';
+    const input = document.getElementById('sv2-search');
+    if (input) input.value = '';
+    this.renderSubjectsList();
+    this.scrollToElement(`chap-${chapterId}`, true);
+  },
+
+  jumpToTopic(subjectId, chapterId, topicId) {
+    const chapter = MedPathData.chapters.find(c => c.id === chapterId);
+    if (chapter && chapter.section) {
+      this.expandedSection[subjectId] = chapter.section;
+    }
+    this.expandedSubject = subjectId;
+    this.expandedChapters = { [chapterId]: true };
+    this.searchQuery = '';
+    const input = document.getElementById('sv2-search');
+    if (input) input.value = '';
+    this.renderSubjectsList();
+    this.scrollToElement(`chap-${chapterId}`, true);
+    setTimeout(() => this.openTopic(topicId), 400);
+  },
+
+  scrollToElement(elementId, highlight) {
     setTimeout(() => {
-      const el = document.querySelector(`.sv2-subject-card[data-subject="${subjectId}"]`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const scrollContainer = document.querySelector('#page-subjects .page-scroll');
+      if (!scrollContainer) return;
+      const rect = el.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const offset = rect.top - containerRect.top + scrollContainer.scrollTop - 100;
+      scrollContainer.scrollTo({ top: offset, behavior: 'smooth' });
+      if (highlight) {
+        const parentCard = el.closest('.sv2-subject-card');
+        if (parentCard) {
+          parentCard.classList.add('highlight');
+          setTimeout(() => parentCard.classList.remove('highlight'), 1300);
+        }
+      }
+    }, 150);
   },
 
   openTopic(topicId) {
-    // Topic detail panel will be built in Session 10
     Toast.info('Topic detail panel coming in Session 10');
   },
 
@@ -3040,15 +3142,10 @@ const SubjectsV2 = {
   }
 };
 
-// Initialize with safe guard
 window.addEventListener('DOMContentLoaded', () => {
   try {
-    if (typeof SubjectsV2 !== 'undefined' && SubjectsV2.init) {
-      SubjectsV2.init();
-    }
-  } catch(e) {
-    console.error('SubjectsV2 init error:', e);
-  }
+    if (typeof SubjectsV2 !== 'undefined' && SubjectsV2.init) SubjectsV2.init();
+  } catch(e) { console.error('SubjectsV2 init error:', e); }
 });
 
 // ============================================================
