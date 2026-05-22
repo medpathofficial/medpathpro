@@ -2460,11 +2460,14 @@ const Dashboard={
     return 'Low priority';
   },
 
-  openTopic(topicId) {
-    // Topic panel will be built in Session 10
-    // For now, just navigate to subjects
-    Toast.info('Topic detail panel coming in Session 10');
-  },
+     openTopic(topicId) {
+      // MP-SESSION-10-TOPIC-PANEL
+      if (window.TopicPanel && window.TopicPanel.open) {
+        window.TopicPanel.open(topicId);
+      } else {
+        Toast.info('Topic panel loading...');
+      }
+    },
 
   // Override original Dashboard.refresh
   init() {
@@ -3156,7 +3159,366 @@ window.addEventListener('DOMContentLoaded', () => {
 // INJECT-POINT: TOPIC-PANEL
 // Paste topic detail panel below this line (Session 10)
 // ============================================================
+/* ==========================================================
+   MP-SESSION-10-TOPIC-PANEL
+   Topic Detail Panel — Bottom Sheet
+   Purpose: Fast topic interaction (studied/revised/later + confidence + notes)
+   Pattern: Auto-save, no save button, swipe to close
+   ========================================================== */
 
+window.TopicPanel = (function() {
+
+  let panelEl = null;
+  let activeTopicId = null;
+
+  function injectStyles() {
+    if (document.getElementById('mp-topic-panel-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'mp-topic-panel-styles';
+    style.textContent = `
+      .tp-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.45);
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 9998;
+      }
+      .tp-overlay.open { opacity: 1; pointer-events: auto; }
+
+      .tp-sheet {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        background: #fff;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 20px 32px;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        z-index: 9999;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+      }
+      .tp-sheet.open { transform: translateY(0); }
+
+      .tp-handle {
+        width: 40px; height: 4px;
+        background: #d1d5db;
+        border-radius: 4px;
+        margin: 0 auto 16px;
+      }
+
+      .tp-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111;
+        margin: 0 0 4px;
+        line-height: 1.3;
+      }
+      .tp-subtitle {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 20px;
+      }
+
+      .tp-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+      .tp-action-btn {
+        flex: 1;
+        padding: 14px 8px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .tp-action-btn:active { transform: scale(0.97); }
+      .tp-action-btn.active {
+        background: #fbbf24;
+        border-color: #f59e0b;
+        color: #111;
+      }
+
+      .tp-section-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+
+      .tp-confidence {
+        margin-bottom: 22px;
+      }
+      .tp-dots {
+        display: flex;
+        gap: 12px;
+      }
+      .tp-dot {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .tp-dot:active { transform: scale(0.9); }
+      .tp-dot.active { background: #fbbf24; }
+
+      .tp-notes-toggle {
+        background: none;
+        border: none;
+        color: #6366f1;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 4px 0;
+        cursor: pointer;
+      }
+      .tp-notes-area {
+        display: none;
+        width: 100%;
+        min-height: 80px;
+        margin-top: 10px;
+        padding: 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+      .tp-notes-area.open { display: block; }
+
+      .tp-saved-flash {
+        position: absolute;
+        top: 16px; right: 20px;
+        font-size: 12px;
+        color: #10b981;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .tp-saved-flash.show { opacity: 1; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildPanel() {
+    if (panelEl) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'tp-overlay';
+    overlay.addEventListener('click', close);
+
+    const sheet = document.createElement('div');
+    sheet.className = 'tp-sheet';
+    sheet.innerHTML = `
+      <div class="tp-handle"></div>
+      <div class="tp-saved-flash">✓ Saved</div>
+      <h3 class="tp-title"></h3>
+      <p class="tp-subtitle"></p>
+
+      <div class="tp-actions">
+        <button class="tp-action-btn" data-status="studied">✅ Studied</button>
+        <button class="tp-action-btn" data-status="revised">🔁 Revised</button>
+        <button class="tp-action-btn" data-status="later">⏳ Later</button>
+      </div>
+
+      <div class="tp-confidence">
+        <div class="tp-section-label">Confidence</div>
+        <div class="tp-dots">
+          <div class="tp-dot" data-level="1"></div>
+          <div class="tp-dot" data-level="2"></div>
+          <div class="tp-dot" data-level="3"></div>
+          <div class="tp-dot" data-level="4"></div>
+          <div class="tp-dot" data-level="5"></div>
+        </div>
+      </div>
+
+      <div class="tp-notes">
+        <button class="tp-notes-toggle">+ Add note</button>
+        <textarea class="tp-notes-area" placeholder="Quick note..."></textarea>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(sheet);
+
+    panelEl = { overlay, sheet };
+
+    // Action buttons
+    sheet.querySelectorAll('.tp-action-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const status = btn.dataset.status;
+        updateTopic({ status: status, lastUpdated: Date.now() });
+        sheet.querySelectorAll('.tp-action-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        flashSaved();
+      });
+    });
+
+    // Confidence dots
+    sheet.querySelectorAll('.tp-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        const level = parseInt(dot.dataset.level);
+        updateTopic({ confidence: level });
+        renderDots(level);
+        flashSaved();
+      });
+    });
+
+    // Notes toggle
+    const toggle = sheet.querySelector('.tp-notes-toggle');
+    const area = sheet.querySelector('.tp-notes-area');
+    toggle.addEventListener('click', () => {
+      area.classList.toggle('open');
+      if (area.classList.contains('open')) {
+        toggle.textContent = '− Hide note';
+        area.focus();
+      } else {
+        toggle.textContent = '+ Add note';
+      }
+    });
+
+    // Auto-save notes (debounced)
+    let noteTimer = null;
+    area.addEventListener('input', () => {
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(() => {
+        updateTopic({ note: area.value });
+        flashSaved();
+      }, 400);
+    });
+  }
+
+  function findTopic(topicId) {
+    // Try multiple data sources to be safe
+    if (window.Store && window.Store.state && window.Store.state.topics) {
+      return window.Store.state.topics.find(t => t.id === topicId);
+    }
+    if (window.medpathData && window.medpathData.topics) {
+      return window.medpathData.topics.find(t => t.id === topicId);
+    }
+    if (window.SUBJECTS) {
+      for (const subj of window.SUBJECTS) {
+        if (!subj.chapters) continue;
+        for (const ch of subj.chapters) {
+          if (!ch.topics) continue;
+          const found = ch.topics.find(t => t.id === topicId);
+          if (found) return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  function getTopicMeta(topicId) {
+    // Read user progress from localStorage
+    try {
+      const raw = localStorage.getItem('medpath-progress');
+      if (!raw) return {};
+      const data = JSON.parse(raw);
+      return data[topicId] || {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveTopicMeta(topicId, meta) {
+    try {
+      const raw = localStorage.getItem('medpath-progress');
+      const data = raw ? JSON.parse(raw) : {};
+      data[topicId] = { ...(data[topicId] || {}), ...meta };
+      localStorage.setItem('medpath-progress', JSON.stringify(data));
+    } catch(e) {
+      console.error('TopicPanel save error:', e);
+    }
+  }
+
+  function updateTopic(changes) {
+    if (!activeTopicId) return;
+    saveTopicMeta(activeTopicId, changes);
+
+    // Silently trigger revision engine if exists
+    if (window.RevisionEngine && window.RevisionEngine.recompute) {
+      try { window.RevisionEngine.recompute(); } catch(e) {}
+    }
+    if (typeof window.runRevisionEngine === 'function') {
+      try { window.runRevisionEngine(); } catch(e) {}
+    }
+  }
+
+  function renderDots(level) {
+    if (!panelEl) return;
+    panelEl.sheet.querySelectorAll('.tp-dot').forEach(d => {
+      const lvl = parseInt(d.dataset.level);
+      if (lvl <= level) d.classList.add('active');
+      else d.classList.remove('active');
+    });
+  }
+
+  function renderActions(status) {
+    if (!panelEl) return;
+    panelEl.sheet.querySelectorAll('.tp-action-btn').forEach(b => {
+      if (b.dataset.status === status) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+  }
+
+  function flashSaved() {
+    if (!panelEl) return;
+    const flash = panelEl.sheet.querySelector('.tp-saved-flash');
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 900);
+  }
+
+  function open(topicId) {
+    injectStyles();
+    buildPanel();
+
+    activeTopicId = topicId;
+    const topic = findTopic(topicId);
+    const meta = getTopicMeta(topicId);
+
+    const title = panelEl.sheet.querySelector('.tp-title');
+    const subtitle = panelEl.sheet.querySelector('.tp-subtitle');
+    const notesArea = panelEl.sheet.querySelector('.tp-notes-area');
+    const notesToggle = panelEl.sheet.querySelector('.tp-notes-toggle');
+
+    title.textContent = topic ? (topic.name || topic.title || 'Topic') : 'Topic';
+    subtitle.textContent = topic ? (topic.code || topic.competency || '') : '';
+
+    renderDots(meta.confidence || 0);
+    renderActions(meta.status || '');
+
+    notesArea.value = meta.note || '';
+    notesArea.classList.remove('open');
+    notesToggle.textContent = meta.note ? '− Show note' : '+ Add note';
+    if (meta.note) {
+      notesArea.classList.add('open');
+      notesToggle.textContent = '− Hide note';
+    }
+
+    requestAnimationFrame(() => {
+      panelEl.overlay.classList.add('open');
+      panelEl.sheet.classList.add('open');
+    });
+  }
+
+  function close() {
+    if (!panelEl) return;
+    panelEl.overlay.classList.remove('open');
+    panelEl.sheet.classList.remove('open');
+    activeTopicId = null;
+  }
+
+  return { open, close };
+
+})();
 // ============================================================
 // INJECT-POINT: PROGRESS-CONTROLLERS
 // Paste progress page code below this line (Session 11)
