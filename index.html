@@ -3420,32 +3420,39 @@ window.TopicPanel = (function() {
     }
     return null;
   }
-
-    // MP-SESSION-10-5-SYNC-BRIDGE
-  // Bridge TopicPanel to real Storage + RevisionEngine systems
+  // MP-SESSION-10-5-V2
+  // Bridge TopicPanel into real Storage + RevisionEngine (no window. prefix — Storage is global const)
 
   function getTopicMeta(topicId) {
     try {
-      if (window.Storage && typeof window.Storage.getTopicState === 'function') {
-        const state = window.Storage.getTopicState(topicId) || {};
+      if (typeof Storage !== 'undefined' && typeof Storage.getTopicState === 'function') {
+        const state = Storage.getTopicState(topicId) || {};
         return {
           status: state.status || '',
           confidence: state.confidence || 0,
-          note: state.note || ''
+          note: state.notes || ''
         };
       }
     } catch(e) {
-      console.warn('getTopicMeta fallback:', e);
+      console.warn('getTopicMeta error:', e);
     }
     return {};
   }
 
   function saveTopicMeta(topicId, changes) {
     try {
-      if (!window.Storage || typeof window.Storage.getTopicState !== 'function') return;
-      const state = window.Storage.getTopicState(topicId) || {};
+      if (typeof Storage === 'undefined' || typeof Storage.getTopicState !== 'function') {
+        console.error('Storage not available for save');
+        return;
+      }
+      const state = Storage.getTopicState(topicId) || {};
+      // Map panel field names to Storage field names
+      if ('note' in changes) {
+        state.notes = changes.note;
+        delete changes.note;
+      }
       Object.assign(state, changes);
-      window.Storage.saveTopicState(topicId, state);
+      Storage.saveTopicState(topicId, state);
     } catch(e) {
       console.error('saveTopicMeta error:', e);
     }
@@ -3455,24 +3462,21 @@ window.TopicPanel = (function() {
     if (!activeTopicId) return;
 
     try {
-      // Route through proper engine functions when possible
-      if (changes.status === 'studied' && window.RevisionEngine && window.RevisionEngine.markFirstStudy) {
-        window.RevisionEngine.markFirstStudy(activeTopicId);
-        // Also persist any other concurrent changes (note, etc)
+      if (changes.status === 'studied' && typeof RevisionEngine !== 'undefined' && RevisionEngine.markFirstStudy) {
+        RevisionEngine.markFirstStudy(activeTopicId);
         const extra = { ...changes };
         delete extra.status;
         if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
       }
-      else if (changes.status === 'revised' && window.RevisionEngine && window.RevisionEngine.updateAfterRevision) {
+      else if (changes.status === 'revised' && typeof RevisionEngine !== 'undefined' && RevisionEngine.updateAfterRevision) {
         const meta = getTopicMeta(activeTopicId);
         const conf = changes.confidence || meta.confidence || 3;
-        window.RevisionEngine.updateAfterRevision(activeTopicId, conf);
+        RevisionEngine.updateAfterRevision(activeTopicId, conf);
         const extra = { ...changes };
         delete extra.status;
         if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
       }
       else {
-        // Direct save for confidence, notes, "later" status
         saveTopicMeta(activeTopicId, changes);
       }
     } catch(e) {
@@ -3480,31 +3484,27 @@ window.TopicPanel = (function() {
       saveTopicMeta(activeTopicId, changes);
     }
 
-    // Trigger live UI refresh across the app
     refreshUI();
   }
 
   function refreshUI() {
     try {
-      // Refresh Subjects list (stars, counters, percentages)
-      if (window.Subjects && typeof window.Subjects.render === 'function') {
-        window.Subjects.render();
+      if (typeof Subjects !== 'undefined' && typeof Subjects.render === 'function') {
+        Subjects.render();
       }
-      if (window.SubjectsV2 && typeof window.SubjectsV2.renderSubjectsList === 'function') {
-        window.SubjectsV2.renderSubjectsList();
+      if (typeof SubjectsV2 !== 'undefined' && typeof SubjectsV2.renderSubjectsList === 'function') {
+        SubjectsV2.renderSubjectsList();
       }
-      // Refresh Dashboard (Done / In Progress / Pending counters)
-      if (window.DashboardV2 && typeof window.DashboardV2.render === 'function') {
-        window.DashboardV2.render();
+      if (typeof DashboardV2 !== 'undefined' && typeof DashboardV2.render === 'function') {
+        DashboardV2.render();
       }
-      if (window.Dashboard && typeof window.Dashboard.refresh === 'function') {
-        window.Dashboard.refresh();
+      if (typeof Dashboard !== 'undefined' && typeof Dashboard.refresh === 'function') {
+        Dashboard.refresh();
       }
     } catch(e) {
       console.warn('refreshUI partial:', e);
     }
   }
-
   function renderDots(level) {
     if (!panelEl) return;
     panelEl.sheet.querySelectorAll('.tp-dot').forEach(d => {
