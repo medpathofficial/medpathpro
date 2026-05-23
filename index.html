@@ -3457,36 +3457,69 @@ window.TopicPanel = (function() {
       console.error('saveTopicMeta error:', e);
     }
   }
+  // MP-SESSION-10-6-COUNTER-FIX
+  // Studied = Done (matches user expectation). Revised = updates schedule. Later = quiet skip.
 
   function updateTopic(changes) {
     if (!activeTopicId) return;
 
     try {
-      if (changes.status === 'studied' && typeof RevisionEngine !== 'undefined' && RevisionEngine.markFirstStudy) {
-        RevisionEngine.markFirstStudy(activeTopicId);
+      if (changes.status === 'studied') {
+        // Mark as DONE + start revision cycle
+        const state = Storage.getTopicState(activeTopicId) || {};
+        const today = new Date().toISOString().slice(0,10);
+
+        state.status = 'done';
+        if (!state.firstStudied) state.firstStudied = today;
+        state.lastRevised = today;
+        if (!state.currentInterval) state.currentInterval = 1;
+        if (!state.easeFactor) state.easeFactor = 2.5;
+        state.forgettingRisk = 'safe';
+
+        // Merge any concurrent changes (confidence, note)
         const extra = { ...changes };
         delete extra.status;
-        if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
+        if ('note' in extra) { state.notes = extra.note; delete extra.note; }
+        Object.assign(state, extra);
+
+        Storage.saveTopicState(activeTopicId, state);
       }
-      else if (changes.status === 'revised' && typeof RevisionEngine !== 'undefined' && RevisionEngine.updateAfterRevision) {
+      else if (changes.status === 'revised') {
+        // Use RevisionEngine for proper SR math
         const meta = getTopicMeta(activeTopicId);
         const conf = changes.confidence || meta.confidence || 3;
-        RevisionEngine.updateAfterRevision(activeTopicId, conf);
+
+        if (typeof RevisionEngine !== 'undefined' && RevisionEngine.updateAfterRevision) {
+          // Ensure topic is at least marked done before revising
+          const state = Storage.getTopicState(activeTopicId) || {};
+          if (state.status !== 'done') {
+            state.status = 'done';
+            if (!state.firstStudied) state.firstStudied = new Date().toISOString().slice(0,10);
+            Storage.saveTopicState(activeTopicId, state);
+          }
+          RevisionEngine.updateAfterRevision(activeTopicId, conf);
+        }
+
         const extra = { ...changes };
         delete extra.status;
         if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
       }
+      else if (changes.status === 'later') {
+        // Quiet skip — no state change, just close
+        // (panel close is handled separately by overlay click)
+      }
       else {
+        // Pure confidence or note update
         saveTopicMeta(activeTopicId, changes);
       }
     } catch(e) {
-      console.error('updateTopic engine error:', e);
+      console.error('updateTopic error:', e);
       saveTopicMeta(activeTopicId, changes);
     }
 
     refreshUI();
   }
-
+  
   function refreshUI() {
     try {
       if (typeof Subjects !== 'undefined' && typeof Subjects.render === 'function') {
