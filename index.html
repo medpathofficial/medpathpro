@@ -3136,8 +3136,13 @@ const SubjectsV2 = {
     }, 150);
   },
 
-  openTopic(topicId) {
-    Toast.info('Topic detail panel coming in Session 10');
+    openTopic(topicId) {
+    // MP-SESSION-10-HOTFIX-SUBJECTS
+    if (window.TopicPanel && window.TopicPanel.open) {
+      window.TopicPanel.open(topicId);
+    } else {
+      Toast.info('Topic panel loading...');
+    }
   },
 
   init() {
