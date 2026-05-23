@@ -3421,39 +3421,87 @@ window.TopicPanel = (function() {
     return null;
   }
 
+    // MP-SESSION-10-5-SYNC-BRIDGE
+  // Bridge TopicPanel to real Storage + RevisionEngine systems
+
   function getTopicMeta(topicId) {
-    // Read user progress from localStorage
     try {
-      const raw = localStorage.getItem('medpath-progress');
-      if (!raw) return {};
-      const data = JSON.parse(raw);
-      return data[topicId] || {};
+      if (window.Storage && typeof window.Storage.getTopicState === 'function') {
+        const state = window.Storage.getTopicState(topicId) || {};
+        return {
+          status: state.status || '',
+          confidence: state.confidence || 0,
+          note: state.note || ''
+        };
+      }
     } catch(e) {
-      return {};
+      console.warn('getTopicMeta fallback:', e);
     }
+    return {};
   }
 
-  function saveTopicMeta(topicId, meta) {
+  function saveTopicMeta(topicId, changes) {
     try {
-      const raw = localStorage.getItem('medpath-progress');
-      const data = raw ? JSON.parse(raw) : {};
-      data[topicId] = { ...(data[topicId] || {}), ...meta };
-      localStorage.setItem('medpath-progress', JSON.stringify(data));
+      if (!window.Storage || typeof window.Storage.getTopicState !== 'function') return;
+      const state = window.Storage.getTopicState(topicId) || {};
+      Object.assign(state, changes);
+      window.Storage.saveTopicState(topicId, state);
     } catch(e) {
-      console.error('TopicPanel save error:', e);
+      console.error('saveTopicMeta error:', e);
     }
   }
 
   function updateTopic(changes) {
     if (!activeTopicId) return;
-    saveTopicMeta(activeTopicId, changes);
 
-    // Silently trigger revision engine if exists
-    if (window.RevisionEngine && window.RevisionEngine.recompute) {
-      try { window.RevisionEngine.recompute(); } catch(e) {}
+    try {
+      // Route through proper engine functions when possible
+      if (changes.status === 'studied' && window.RevisionEngine && window.RevisionEngine.markFirstStudy) {
+        window.RevisionEngine.markFirstStudy(activeTopicId);
+        // Also persist any other concurrent changes (note, etc)
+        const extra = { ...changes };
+        delete extra.status;
+        if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
+      }
+      else if (changes.status === 'revised' && window.RevisionEngine && window.RevisionEngine.updateAfterRevision) {
+        const meta = getTopicMeta(activeTopicId);
+        const conf = changes.confidence || meta.confidence || 3;
+        window.RevisionEngine.updateAfterRevision(activeTopicId, conf);
+        const extra = { ...changes };
+        delete extra.status;
+        if (Object.keys(extra).length) saveTopicMeta(activeTopicId, extra);
+      }
+      else {
+        // Direct save for confidence, notes, "later" status
+        saveTopicMeta(activeTopicId, changes);
+      }
+    } catch(e) {
+      console.error('updateTopic engine error:', e);
+      saveTopicMeta(activeTopicId, changes);
     }
-    if (typeof window.runRevisionEngine === 'function') {
-      try { window.runRevisionEngine(); } catch(e) {}
+
+    // Trigger live UI refresh across the app
+    refreshUI();
+  }
+
+  function refreshUI() {
+    try {
+      // Refresh Subjects list (stars, counters, percentages)
+      if (window.Subjects && typeof window.Subjects.render === 'function') {
+        window.Subjects.render();
+      }
+      if (window.SubjectsV2 && typeof window.SubjectsV2.renderSubjectsList === 'function') {
+        window.SubjectsV2.renderSubjectsList();
+      }
+      // Refresh Dashboard (Done / In Progress / Pending counters)
+      if (window.DashboardV2 && typeof window.DashboardV2.render === 'function') {
+        window.DashboardV2.render();
+      }
+      if (window.Dashboard && typeof window.Dashboard.refresh === 'function') {
+        window.Dashboard.refresh();
+      }
+    } catch(e) {
+      console.warn('refreshUI partial:', e);
     }
   }
 
