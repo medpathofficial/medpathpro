@@ -1687,7 +1687,13 @@ const Nav={
     if(pageId==='dashboard')Dashboard.refresh();
     if(pageId==='subjects')Subjects.render();
     if(pageId==='progress'){
-  console.log('Progress page opened');
+
+  const wrap=document.querySelector('#page-progress .progress-wrap');
+
+  if(wrap){
+    wrap.innerHTML=ProgressPage.render();
+  }
+
 }
       if(pageId==='profile')ProfilePage.render();
   }
