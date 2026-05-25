@@ -1688,14 +1688,14 @@ const Nav={
     if(pageId==='subjects')Subjects.render();
     if(pageId==='progress'){
 
-  const page=document.getElementById('page-progress');
+  const wrap=document.querySelector('#page-progress .progress-wrap');
 
-  if(page){
-    page.innerHTML=ProgressPage.render();
+  if(wrap){
+    wrap.innerHTML=ProgressPage.render();
   }
 
 }
-    if(pageId==='profile')ProfilePage.render();
+      if(pageId==='profile')ProfilePage.render();
   }
 };
 
