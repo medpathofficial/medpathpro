@@ -1797,120 +1797,7 @@ const Onboarding={
     setTimeout(()=>wrap.innerHTML='',4000);
   }
 };
----
 
-# EXACT CODE TO PASTE
-
-```js
-/* =========================================================
-   MP-SESSION-11-PROGRESS-ENGINE
-   Canonical Progress Statistics Layer
-========================================================= */
-
-// MP-VERIFY: PROGRESS-STATS-V1-READY
-
-RevisionEngine.getProgressStats = function () {
-
-  const topicStates = Storage.get('medpath_topic_states', {});
-  const subjects = MedPathData.subjects || [];
-
-  let totalTopics = 0;
-  let startedTopics = 0;
-  let completedTopics = 0;
-  let revisionDue = 0;
-
-  const confidenceDistribution = {
-    low: 0,
-    medium: 0,
-    high: 0
-  };
-
-  const subjectBreakdown = [];
-
-  subjects.forEach(subject => {
-
-    let subjectTotal = 0;
-    let subjectCompleted = 0;
-
-    (subject.chapters || []).forEach(chapter => {
-
-      (chapter.topics || []).forEach(topic => {
-
-        totalTopics++;
-
-        subjectTotal++;
-
-        const state = topicStates[topic.id] || {};
-
-        const status = state.status || 'not_started';
-        const confidence = Number(state.confidence || 0);
-
-        // Started Topics
-        if (status !== 'not_started') {
-          startedTopics++;
-        }
-
-        // Completed Topics
-        if (status === 'done') {
-          completedTopics++;
-          subjectCompleted++;
-        }
-
-        // Confidence Distribution
-        if (confidence <= 1 && status !== 'not_started') {
-          confidenceDistribution.low++;
-        } else if (confidence <= 3 && status !== 'not_started') {
-          confidenceDistribution.medium++;
-        } else if (confidence >= 4) {
-          confidenceDistribution.high++;
-        }
-
-        // Revision Due Logic
-        if (
-          state.forgettingRisk === 'due_soon' ||
-          state.forgettingRisk === 'overdue' ||
-          state.forgettingRisk === 'critical'
-        ) {
-          revisionDue++;
-        }
-
-      });
-
-    });
-
-    const subjectProgress = subjectTotal > 0
-      ? Math.round((subjectCompleted / subjectTotal) * 100)
-      : 0;
-
-    subjectBreakdown.push({
-      id: subject.id,
-      name: subject.name,
-      emoji: subject.emoji,
-      progress: subjectProgress,
-      completed: subjectCompleted,
-      total: subjectTotal
-    });
-
-  });
-
-  const progressPercent = totalTopics > 0
-    ? Math.round((completedTopics / totalTopics) * 100)
-    : 0;
-
-  const streak = Storage.get('medpath_streak', 0);
-
-  return {
-    totalTopics,
-    startedTopics,
-    completedTopics,
-    progressPercent,
-    revisionDue,
-    streak,
-    confidenceDistribution,
-    subjectBreakdown
-  };
-
-};
 // ============================================================
 // INJECT-POINT: REVISION-ENGINE
 // Paste revision engine below this line (Session 7)
@@ -2270,7 +2157,109 @@ RevisionEngine.getProgressStats = function () {
   }
 
 };
+/* =========================================================
+   MP-SESSION-11-PROGRESS-ENGINE
+========================================================= */
 
+// MP-VERIFY: PROGRESS-STATS-V1-READY
+
+RevisionEngine.getProgressStats = function () {
+
+  const topicStates = Storage.get('medpath_topic_states', {});
+  const subjects = MedPathData.subjects || [];
+
+  let totalTopics = 0;
+  let startedTopics = 0;
+  let completedTopics = 0;
+  let revisionDue = 0;
+
+  const confidenceDistribution = {
+    low: 0,
+    medium: 0,
+    high: 0
+  };
+
+  const subjectBreakdown = [];
+
+  subjects.forEach(subject => {
+
+    let subjectTotal = 0;
+    let subjectCompleted = 0;
+
+    (subject.chapters || []).forEach(chapter => {
+
+      (chapter.topics || []).forEach(topic => {
+
+        totalTopics++;
+        subjectTotal++;
+
+        const state = topicStates[topic.id] || {};
+
+        const status = state.status || 'not_started';
+        const confidence = Number(state.confidence || 0);
+
+        if (status !== 'not_started') {
+          startedTopics++;
+        }
+
+        if (status === 'done') {
+          completedTopics++;
+          subjectCompleted++;
+        }
+
+        if (confidence <= 1 && status !== 'not_started') {
+          confidenceDistribution.low++;
+        } else if (confidence <= 3 && status !== 'not_started') {
+          confidenceDistribution.medium++;
+        } else if (confidence >= 4) {
+          confidenceDistribution.high++;
+        }
+
+        if (
+          state.forgettingRisk === 'due_soon' ||
+          state.forgettingRisk === 'overdue' ||
+          state.forgettingRisk === 'critical'
+        ) {
+          revisionDue++;
+        }
+
+      });
+
+    });
+
+    const subjectProgress = subjectTotal > 0
+      ? Math.round((subjectCompleted / subjectTotal) * 100)
+      : 0;
+
+    subjectBreakdown.push({
+      id: subject.id,
+      name: subject.name,
+      emoji: subject.emoji,
+      progress: subjectProgress,
+      completed: subjectCompleted,
+      total: subjectTotal
+    });
+
+  });
+
+  const progressPercent = totalTopics > 0
+    ? Math.round((completedTopics / totalTopics) * 100)
+    : 0;
+
+  const streak = Storage.get('medpath_streak', 0);
+
+  return {
+    totalTopics,
+    startedTopics,
+    completedTopics,
+    progressPercent,
+    revisionDue,
+    streak,
+    confidenceDistribution,
+    subjectBreakdown
+  };
+
+};
 // ============================================================
 // INJECT-POINT: REVISION-ENGINE-EXTENSIONS
 // Future: Pro tier features hook here
