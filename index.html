@@ -3711,7 +3711,121 @@ window.TopicPanel = (function() {
 // INJECT-POINT: PROGRESS-CONTROLLERS
 // Paste progress page code below this line (Session 11)
 // ============================================================
+/* =========================================================
+   MP-SESSION-11-PROGRESS-UI
+========================================================= */
 
+// MP-VERIFY: PROGRESS-PAGE-V1-READY
+
+const ProgressPage = {
+
+  render() {
+
+    const stats = RevisionEngine.getProgressStats();
+
+    return `
+      <div class="page progress-page">
+
+        <div class="progress-hero">
+
+          <div class="progress-card">
+            <div class="progress-value">${stats.progressPercent}%</div>
+            <div class="progress-label">Overall Progress</div>
+          </div>
+
+          <div class="progress-card">
+            <div class="progress-value">${stats.streak}</div>
+            <div class="progress-label">Day Streak</div>
+          </div>
+
+          <div class="progress-card">
+            <div class="progress-value">${stats.completedTopics}</div>
+            <div class="progress-label">Topics Completed</div>
+          </div>
+
+          <div class="progress-card">
+            <div class="progress-value">${stats.revisionDue}</div>
+            <div class="progress-label">Due for Revision</div>
+          </div>
+
+        </div>
+
+        <div class="progress-section">
+
+          <div class="section-title">
+            Subject Progress
+          </div>
+
+          ${stats.subjectBreakdown.map(subject => `
+            <div class="subject-progress-row">
+
+              <div class="subject-progress-top">
+                <div class="subject-progress-name">
+                  ${subject.emoji} ${subject.name}
+                </div>
+
+                <div class="subject-progress-percent">
+                  ${subject.progress}%
+                </div>
+              </div>
+
+              <div class="subject-progress-bar">
+                <div 
+                  class="subject-progress-fill"
+                  style="width:${subject.progress}%"
+                ></div>
+              </div>
+
+            </div>
+          `).join('')}
+
+        </div>
+
+        <div class="progress-section">
+
+          <div class="section-title">
+            Confidence Snapshot
+          </div>
+
+          <div class="confidence-grid">
+
+            <div class="confidence-card">
+              <div class="confidence-value">
+                ${stats.confidenceDistribution.low}
+              </div>
+              <div class="confidence-label">
+                Low
+              </div>
+            </div>
+
+            <div class="confidence-card">
+              <div class="confidence-value">
+                ${stats.confidenceDistribution.medium}
+              </div>
+              <div class="confidence-label">
+                Medium
+              </div>
+            </div>
+
+            <div class="confidence-card">
+              <div class="confidence-value">
+                ${stats.confidenceDistribution.high}
+              </div>
+              <div class="confidence-label">
+                High
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+};
 // ============================================================
 // INJECT-POINT: SEARCH-CONTROLLERS
 // Paste search code below this line (Session 12)
