@@ -3964,98 +3964,127 @@ const LearningHealthEngine = {
   }
   generateDiagnosis(vitals) {
 
-    const diagnosis = [];
+  const diagnosis = [];
 
-    if (vitals.coverage < 30) {
+  if (vitals.coverage < 30) {
 
-      diagnosis.push({
-        type: 'coverage',
-        title: 'Low Coverage',
-        reason: 'Large portion of syllabus remains untouched'
-      });
-
-    }
-
-    if (vitals.confidence < 60) {
-
-      diagnosis.push({
-        type: 'confidence',
-        title: 'Weak Conceptual Mastery',
-        reason: 'Average confidence is below target'
-      });
-
-    }
-
-    if (vitals.consistency < 50) {
-
-      diagnosis.push({
-        type: 'consistency',
-        title: 'Inconsistent Study Pattern',
-        reason: 'Study streak is currently low'
-      });
-
-    }
-
-    if (vitals.revisionLoad < 60) {
-
-      diagnosis.push({
-        type: 'retention',
-        title: 'Retention Risk',
-        reason: 'Revision backlog is building'
-      });
-
-    }
-
-    return diagnosis;
-
-  },
-    generatePrescription(diagnosis) {
-
-    const actions = [];
-
-    diagnosis.forEach(item => {
-
-      if (item.type === 'coverage') {
-
-        actions.push({
-          action: 'Complete untouched topics',
-          reason: item.reason
-        });
-
-      }
-
-      if (item.type === 'confidence') {
-
-        actions.push({
-          action: 'Review weak concepts',
-          reason: item.reason
-        });
-
-      }
-
-      if (item.type === 'consistency') {
-
-        actions.push({
-          action: 'Re-establish daily study habit',
-          reason: item.reason
-        });
-
-      }
-
-      if (item.type === 'retention') {
-
-        actions.push({
-          action: 'Revise overdue topics',
-          reason: item.reason
-        });
-
-      }
-
+    diagnosis.push({
+      type: 'coverage',
+      title: 'Low Coverage',
+      severity: 'high',
+      reason: `Coverage is ${vitals.coverage}%. Less than one-third of the syllabus has been completed.`,
+      impact: 'Exam readiness is being limited by unfinished content.'
     });
 
-    return actions;
+  }
 
-  },
+  if (vitals.confidence < 60) {
+
+    diagnosis.push({
+      type: 'confidence',
+      title: 'Weak Conceptual Mastery',
+      severity: 'medium',
+      reason: `Average confidence is ${vitals.confidence}%. Recall and understanding remain below target.`,
+      impact: 'Knowledge may not be reliably retrievable during exams.'
+    });
+
+  }
+
+  if (vitals.consistency < 50) {
+
+    diagnosis.push({
+      type: 'consistency',
+      title: 'Inconsistent Study Pattern',
+      severity: 'medium',
+      reason: `Consistency score is ${vitals.consistency}%. Study activity has been irregular.`,
+      impact: 'Learning momentum and retention are being reduced.'
+    });
+
+  }
+
+  if (vitals.revisionLoad < 60) {
+
+    diagnosis.push({
+      type: 'retention',
+      title: 'Retention Risk',
+      severity: 'high',
+      reason: `Revision load score is ${vitals.revisionLoad}%. Revision backlog is accumulating.`,
+      impact: 'Previously learned topics are at increased risk of being forgotten.'
+    });
+
+  }
+
+  if (diagnosis.length === 0) {
+
+    diagnosis.push({
+      type: 'healthy',
+      title: 'Learning System Stable',
+      severity: 'low',
+      reason: 'All learning vitals are currently within target range.',
+      impact: 'Continue current study and revision strategy.'
+    });
+
+  }
+
+  return diagnosis;
+
+},
+    generatePrescription(diagnosis) {
+
+  const actions = [];
+
+  diagnosis.forEach(item => {
+
+    if (item.type === 'coverage') {
+
+      actions.push({
+        priority: 'high',
+        action: 'Complete untouched topics',
+        target: 'Increase syllabus coverage',
+        reason: item.reason
+      });
+
+    }
+
+    if (item.type === 'confidence') {
+
+      actions.push({
+        priority: 'medium',
+        action: 'Review low-confidence topics',
+        target: 'Improve conceptual mastery',
+        reason: item.reason
+      });
+
+    }
+
+    if (item.type === 'consistency') {
+
+      actions.push({
+        priority: 'medium',
+        action: 'Restore study consistency',
+        target: 'Build daily learning momentum',
+        reason: item.reason
+      });
+
+    }
+
+    if (item.type === 'retention') {
+
+      actions.push({
+        priority: 'high',
+        action: 'Revise overdue topics',
+        target: 'Reduce forgetting risk',
+        reason: item.reason
+      });
+
+    }
+
+  });
+
+  return actions;
+
+},
+  
     compute() {
 
     const vitals = {
