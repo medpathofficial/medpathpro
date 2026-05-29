@@ -3999,7 +3999,57 @@ if (diagnosis.length === 0) {
   });
 
 }
+const prescription = [];
 
+if (coverage < 30) {
+
+  prescription.push({
+    priority: 'High',
+    action: 'Complete unfinished topics',
+    reason: 'Coverage is limiting exam readiness.'
+  });
+
+}
+
+if (confidence < 60) {
+
+  prescription.push({
+    priority: 'Medium',
+    action: 'Revise low-confidence topics',
+    reason: 'Conceptual mastery needs strengthening.'
+  });
+
+}
+
+if (consistency < 50) {
+
+  prescription.push({
+    priority: 'Medium',
+    action: 'Restore daily study consistency',
+    reason: 'Irregular study reduces retention.'
+  });
+
+}
+
+if (revisionLoad < 60) {
+
+  prescription.push({
+    priority: 'High',
+    action: 'Clear revision backlog',
+    reason: 'Overdue topics are increasing forgetting risk.'
+  });
+
+}
+
+if (prescription.length === 0) {
+
+  prescription.push({
+    priority: 'Low',
+    action: 'Maintain current revision pattern',
+    reason: 'Learning health is stable.'
+  });
+
+}
 return {
 
   vitals: {
@@ -4011,7 +4061,9 @@ return {
 
   healthScore,
 
-  diagnosis
+  diagnosis,
+
+  prescription
 
 };
 
