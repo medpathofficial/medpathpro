@@ -3898,8 +3898,18 @@ const ProgressPage = {
 // Session 11
 // Pure Interpreter Layer
 // ============================================================
-
 const LearningHealthEngine = {
+
+  calculateCoverage() {
+
+    const stats = RevisionEngine.getProgressStats();
+
+    return Math.max(
+      0,
+      Math.min(100, stats.progressPercent || 0)
+    );
+
+  }
 
 };
 // ============================================================
