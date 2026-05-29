@@ -3953,18 +3953,67 @@ const LearningHealthEngine = {
       (revisionLoad * 0.35)
     );
 
-    return {
+  const diagnosis = [];
 
-      vitals: {
-        coverage,
-        confidence,
-        consistency,
-        revisionLoad
-      },
+if (coverage < 30) {
 
-      healthScore
+  diagnosis.push({
+    title: 'Low Coverage',
+    reason: 'Large portions of the syllabus remain incomplete.'
+  });
 
-    };
+}
+
+if (confidence < 60) {
+
+  diagnosis.push({
+    title: 'Weak Conceptual Mastery',
+    reason: 'Many studied topics have low confidence.'
+  });
+
+}
+
+if (consistency < 50) {
+
+  diagnosis.push({
+    title: 'Inconsistent Study Pattern',
+    reason: 'Study activity has not been sustained.'
+  });
+
+}
+
+if (revisionLoad < 60) {
+
+  diagnosis.push({
+    title: 'Retention Risk',
+    reason: 'Revision backlog is accumulating.'
+  });
+
+}
+
+if (diagnosis.length === 0) {
+
+  diagnosis.push({
+    title: 'Learning System Stable',
+    reason: 'All major learning vitals are within target range.'
+  });
+
+}
+
+return {
+
+  vitals: {
+    coverage,
+    confidence,
+    consistency,
+    revisionLoad
+  },
+
+  healthScore,
+
+  diagnosis
+
+};
 
   }
 
