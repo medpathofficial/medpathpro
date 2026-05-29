@@ -3909,6 +3909,58 @@ const LearningHealthEngine = {
       Math.min(100, stats.progressPercent || 0)
     );
 
+  },
+    calculateConfidence() {
+
+    const states = Storage.getTopicStates();
+    const values = [];
+
+    Object.values(states).forEach(state => {
+
+      if (
+        state &&
+        state.status === 'done' &&
+        state.confidence
+      ) {
+        values.push(state.confidence);
+      }
+
+    });
+
+    if (values.length === 0) return 0;
+
+    const avg =
+      values.reduce((a, b) => a + b, 0) /
+      values.length;
+
+    return Math.round((avg / 5) * 100);
+
+  },
+    calculateConsistency() {
+
+    const stats = RevisionEngine.getProgressStats();
+
+    const streak = stats.streak || 0;
+
+    return Math.min(
+      100,
+      streak * 10
+    );
+
+  },
+    calculateRevisionLoad() {
+
+    const stats = RevisionEngine.getProgressStats();
+
+    const due = stats.revisionDue || 0;
+
+    if (due === 0) return 100;
+
+    return Math.max(
+      0,
+      100 - (due * 5)
+    );
+
   }
 
 };
