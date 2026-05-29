@@ -3901,9 +3901,71 @@ const ProgressPage = {
 const LearningHealthEngine = {
 
   compute() {
+
+    const stats = RevisionEngine.getProgressStats();
+
+    const streakData = Storage.getStreak();
+
+    const coverage =
+      stats.progressPercent || 0;
+
+    const confidenceDist =
+      stats.confidenceDistribution || {};
+
+    const low =
+      confidenceDist.low || 0;
+
+    const medium =
+      confidenceDist.medium || 0;
+
+    const high =
+      confidenceDist.high || 0;
+
+    const confidenceTotal =
+      low + medium + high;
+
+    const confidence = confidenceTotal === 0
+      ? 100
+      : Math.round(
+          (
+            (high * 100) +
+            (medium * 60) +
+            (low * 20)
+          ) / confidenceTotal
+        );
+
+    const consistency =
+      Math.min(
+        100,
+        (streakData.current || 0) * 10
+      );
+
+    const revisionLoad =
+      Math.max(
+        0,
+        100 - ((stats.revisionDue || 0) * 5)
+      );
+
+    const healthScore = Math.round(
+      (coverage * 0.20) +
+      (confidence * 0.25) +
+      (consistency * 0.20) +
+      (revisionLoad * 0.35)
+    );
+
     return {
-      healthScore: 100
+
+      vitals: {
+        coverage,
+        confidence,
+        consistency,
+        revisionLoad
+      },
+
+      healthScore
+
     };
+
   }
 
 };
