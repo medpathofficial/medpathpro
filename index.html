@@ -3874,6 +3874,54 @@ if (health.healthScore >= 90) {
   `).join('')}
 
 </div>
+<div style="
+  margin-top:18px;
+">
+
+  <div style="
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:10px;
+  ">
+    Prescription
+  </div>
+
+  ${health.prescription.map(p => `
+
+    <div style="
+      margin-bottom:10px;
+      padding:10px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.04);
+    ">
+
+      <div style="
+        font-size:12px;
+        opacity:0.7;
+        margin-bottom:4px;
+      ">
+        ${p.priority}
+      </div>
+
+      <div style="
+        font-weight:600;
+        margin-bottom:4px;
+      ">
+        ${p.action}
+      </div>
+
+      <div style="
+        font-size:13px;
+        opacity:0.75;
+      ">
+        ${p.reason}
+      </div>
+
+    </div>
+
+  `).join('')}
+
+</div>
   `;
 
 })()}
