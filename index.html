@@ -3962,7 +3962,154 @@ const LearningHealthEngine = {
     );
 
   }
+  generateDiagnosis(vitals) {
 
+    const diagnosis = [];
+
+    if (vitals.coverage < 30) {
+
+      diagnosis.push({
+        type: 'coverage',
+        title: 'Low Coverage',
+        reason: 'Large portion of syllabus remains untouched'
+      });
+
+    }
+
+    if (vitals.confidence < 60) {
+
+      diagnosis.push({
+        type: 'confidence',
+        title: 'Weak Conceptual Mastery',
+        reason: 'Average confidence is below target'
+      });
+
+    }
+
+    if (vitals.consistency < 50) {
+
+      diagnosis.push({
+        type: 'consistency',
+        title: 'Inconsistent Study Pattern',
+        reason: 'Study streak is currently low'
+      });
+
+    }
+
+    if (vitals.revisionLoad < 60) {
+
+      diagnosis.push({
+        type: 'retention',
+        title: 'Retention Risk',
+        reason: 'Revision backlog is building'
+      });
+
+    }
+
+    return diagnosis;
+
+  },
+    generatePrescription(diagnosis) {
+
+    const actions = [];
+
+    diagnosis.forEach(item => {
+
+      if (item.type === 'coverage') {
+
+        actions.push({
+          action: 'Complete untouched topics',
+          reason: item.reason
+        });
+
+      }
+
+      if (item.type === 'confidence') {
+
+        actions.push({
+          action: 'Review weak concepts',
+          reason: item.reason
+        });
+
+      }
+
+      if (item.type === 'consistency') {
+
+        actions.push({
+          action: 'Re-establish daily study habit',
+          reason: item.reason
+        });
+
+      }
+
+      if (item.type === 'retention') {
+
+        actions.push({
+          action: 'Revise overdue topics',
+          reason: item.reason
+        });
+
+      }
+
+    });
+
+    return actions;
+
+  },
+    compute() {
+
+    const vitals = {
+
+      coverage: this.calculateCoverage(),
+
+      confidence: this.calculateConfidence(),
+
+      consistency: this.calculateConsistency(),
+
+      revisionLoad: this.calculateRevisionLoad()
+
+    };
+
+    const healthScore = Math.round(
+
+      (vitals.coverage * 0.25) +
+
+      (vitals.confidence * 0.25) +
+
+      (vitals.consistency * 0.15) +
+
+      (vitals.revisionLoad * 0.35)
+
+    );
+
+    let grade = 'F';
+
+    if (healthScore >= 90) grade = 'A';
+    else if (healthScore >= 80) grade = 'B';
+    else if (healthScore >= 70) grade = 'C';
+    else if (healthScore >= 60) grade = 'D';
+
+    const diagnosis =
+      this.generateDiagnosis(vitals);
+
+    const prescription =
+      this.generatePrescription(diagnosis);
+
+    return {
+
+      healthScore,
+
+      grade,
+
+      vitals,
+
+      diagnosis,
+
+      prescription
+
+    };
+
+  }
 };
 // ============================================================
 // INJECT-POINT: SEARCH-CONTROLLERS
