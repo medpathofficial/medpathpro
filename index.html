@@ -3834,7 +3834,46 @@ if (health.healthScore >= 90) {
 
 </div>
     </div>
+<div style="
+  margin-top:18px;
+">
 
+  <div style="
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:10px;
+  ">
+    Diagnosis
+  </div>
+
+  ${health.diagnosis.map(d => `
+
+    <div style="
+      margin-bottom:10px;
+      padding:10px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.04);
+    ">
+
+      <div style="
+        font-weight:600;
+        margin-bottom:4px;
+      ">
+        ${d.title}
+      </div>
+
+      <div style="
+        font-size:13px;
+        opacity:0.75;
+      ">
+        ${d.reason}
+      </div>
+
+    </div>
+
+  `).join('')}
+
+</div>
   `;
 
 })()}
