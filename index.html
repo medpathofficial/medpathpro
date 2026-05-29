@@ -3740,7 +3740,44 @@ const ProgressPage = {
     ">
       📈 Progress
     </div>
+${(() => {
 
+  const health =
+    LearningHealthEngine.compute();
+
+  return `
+
+    <div class="card" style="
+      margin-bottom:20px;
+    ">
+
+      <div style="
+        font-size:18px;
+        font-weight:700;
+        margin-bottom:8px;
+      ">
+        🩺 Learning Health
+      </div>
+
+      <div style="
+        font-size:32px;
+        font-weight:700;
+      ">
+        ${health.healthScore}
+      </div>
+
+      <div style="
+        opacity:0.8;
+        margin-top:6px;
+      ">
+        ${health.diagnosis.length} active diagnoses
+      </div>
+
+    </div>
+
+  `;
+
+})()}
     <div style="
       display:grid;
       grid-template-columns:repeat(2,1fr);
