@@ -3934,67 +3934,7 @@ if (health.healthScore >= 90) {
 
     </div>
 
-     <div style="
-      margin-top:24px;
-    ">
-
-      <div style="
-        font-size:18px;
-        font-weight:700;
-        margin-bottom:14px;
-      ">
-        Subject Progress
-      </div>
-
-      ${RevisionEngine.getProgressStats().subjectBreakdown.map(subject => `
-
-        <div class="card" style="
-          margin-bottom:12px;
-        ">
-
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:10px;
-          ">
-
-            <div style="
-              font-weight:600;
-            ">
-              ${subject.emoji} ${subject.name}
-            </div>
-
-            <div style="
-              opacity:0.7;
-              font-size:14px;
-            ">
-              ${subject.progress}%
-            </div>
-
-          </div>
-
-          <div style="
-            height:8px;
-            border-radius:999px;
-            background:rgba(255,255,255,0.08);
-            overflow:hidden;
-          ">
-
-            <div style="
-              width:${subject.progress}%;
-              height:100%;
-              border-radius:999px;
-              background:linear-gradient(90deg,#FFD54F,#FFB300);
-            "></div>
-
-          </div>
-
-        </div>
-
-      `).join('')}
-
-    </div>
+     
 
       <div style="
       margin-top:24px;
