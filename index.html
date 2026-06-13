@@ -1003,7 +1003,39 @@ const Storage={
   saveProfile(p){return this.set('medpath_profile',p);},
   getTopicStates(){return this.get('medpath_topic_states',{});},
   saveTopicStates(s){return this.set('medpath_topic_states',s);},
-  getTopicState(id){const states=this.getTopicStates();return states[id]||{topicId:id,status:'not_started',confidence:0,firstStudied:null,lastRevised:null,notes:'',revisionCount:0,examCompletions:[],forgettingRisk:'safe'};},
+  getTopicState(id){
+  const states=this.getTopicStates();
+
+  return states[id] || {
+
+    topicId:id,
+
+    status:'not_started',
+
+    confidence:0,
+    confidenceHistory:[],
+
+    firstStudied:null,
+    studyHistory:[],
+
+    lastRevised:null,
+
+    revisionCount:0,
+    revisionHistory:[],
+
+    currentInterval:null,
+    easeFactor:null,
+
+    forgettingRisk:'safe',
+
+    skipCount:0,
+    lastSkipped:null,
+
+    notes:'',
+
+    examCompletions:[]
+  };
+},
   saveTopicState(id,state){const states=this.getTopicStates();states[id]={...states[id],...state,topicId:id};return this.saveTopicStates(states);},
   getStreak(){return this.get('medpath_streak',{current:0,best:0,lastStudyDate:null,weeklyActivity:[]});},
   saveStreak(s){return this.set('medpath_streak',s);},
